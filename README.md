@@ -1,0 +1,26 @@
+ - [ ] add the emphasis areas, sunglare, and weather to old menu
+ - [x] satellite overlay
+ - [x] fix sri popup crash details
+ - [x] fix mpo popup
+ - [x] filter by sri in data page
+ - [x] toggle crash clusters doesn't turn off labels and unclustered points
+ - [x] not converting codes correctly
+ - [x] mpo popups not showing up hmmmm
+ - [x] fix sri attribute update
+ - [x] convert codes in data page
+ - [x] equity layer symbology
+ - [x] equity layer popup
+ - [x] sri popups
+ - [x] county popups 
+ - [x] cluster popups
+ - [x] grid titles don't get updated with new emphasis area selection
+ - [x] updating emphasis area doesn't update map/data page when sri is selected
+ - [x] SRI filters don't update data page
+ - [x] jurisdiction selections don't update the data page
+ - [x] set temporal filter to default to 2016
+ - [x] section headers don't update in filter menu
+
+Non-Critical
+ - [ ] export buttons don't work
+ - [ ] legend can expand up and out of range for user to drag
+ - [ ] tables need to be indexed by year, county, county-muni, and sri (ray is working on it)

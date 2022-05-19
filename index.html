@@ -1,0 +1,969 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <title>
+        Emphasis Areas Module
+    </title>
+    <link rel="icon" href="img/njdotsealIcon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jszip-2.5.0/b-1.7.1/b-html5-1.7.1/datatables.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link href="css/bootstrap-tour-standalone.css" rel="stylesheet">
+    <link href="css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css" type="text/css">
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <link href="css/application.css?v=2021.05.04" rel="stylesheet">
+
+</head>
+
+<body class="with-top-navbar">
+    <nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark app-navbar">
+        <a class="navbar-brand" href="../SafetyMenu/" style="margin-left:1rem;">
+            <span class="njVoyagerSeal"></span> Safety Voyager:
+            <span id="currentPage">Emphasis Areas</span>
+            <span id="currentSummary"></span>
+        </a>
+        <div class="form-inline d-none d-md-flex ml-auto" style="margin-right: 1rem;">
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav left-align">
+                <li class="nav-item">
+                    <a id="StatisticsPill" class="nav-link display-toggle active" data-target="statisticsColumn" title="See aggregate statistics pertaining to the filters applied.">Statistics</a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a id="MapPill" class="nav-link display-toggle" data-target="mapColumn" title="Visualize features selected by the filters applied on a map.">Map</a>
+                </li>
+                <li class="nav-item">
+                    <a id="DataPill" class="nav-link display-toggle" data-target="dataColumn" title="View Occupants and Pedestrian data relating to the selected Emphasis Area.">
+                        Data
+                    </a>
+                </li>
+                <li class="nav-item mx-1">
+                    <a id="tourButton" title="Start Tutorial"></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+        <div id="backdropFallback" class="tour-backdrop hidden"></div>
+
+
+        <div id='mainPageContainer' class="row flex-fill h-100">
+            <div class="col-lg-3 flex-fill border-right pe-0">
+                <div class="accordion accordion-vh-100 h-100" id="filterAccordion">
+
+                    <div id="filterAccordianDiv">
+                        <!-- EMPHASIS AREA SELECTION SECTION -->
+                        <div class="card paused">
+                            <div class="card-header filter-heading-selected" id="EmphasisAreaSelection">
+                                <h2 class="mb-0">
+                                    <button id="EmphasisAreaSelection-button" class="btn btn-block filter-heading-button-selected" type="button" data-toggle="collapse" data-target="#EmphasisAreaSelection-collapse" aria-expanded="true" aria-controls="EmphasisAreaSelection-collapse">
+                                        1. Emphasis Area <span id="emphasisAreaSelectionLabel"> (Lane Departure)</span>
+                                        <div id="EmphasisAreaSelection-arrow" class="arrowIconDown"></div>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="EmphasisAreaSelection-collapse" class="collapse show" aria-labelledby="headingTwo" data-parent="#filterAccordion">
+                                <div class="card-body">
+                                    <div style="text-align: justify; font-size: 0.9em;">
+                                        Select an Emphasis Area to display statistics and related crashes on the map.
+                                        <div id="zoomer" class="hidden"></div>
+                                    </div>
+                                    <div class="row margin-top-15">
+                                        <div class="">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="eaRadio" id="lanedeparture" value="lanedeparture" data-table="lane_departure" checked>
+                                                <label class="form-check-label" for="lanedeparture">
+                                                    Lane Departure
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="eaRadio" id="pedbike" value="pedbike" data-table="ped_bike">
+                                                <label class="form-check-label" for="pedbike">
+                                                    Pedestrian & Cyclists
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="eaRadio" id="intersection" value="intersection" data-table="intersection">
+                                                <label class="form-check-label" for="intersection">
+                                                    Intersections
+                                                </label>
+                                            </div>
+                                            <div class="border-bottom margin-top-15 margin-bot-15"></div>
+                                            <div>
+                                                <div class="margin-bot-5 lead">Driver Behavior</div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-aggressive" value="Aggressive" data-table="db_aggressive">
+                                                            <label class="form-check-label" for="driverbehavior-aggressive">
+                                                                Aggressive
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-drowsydistracted" value="DrowsyDistracted" data-table="db_drowsy_distracted">
+                                                            <label class="form-check-label" for="driverbehavior-drowsydistracted">
+                                                                Drowsy/Distracted
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-impaired" value="Impaired" data-table="db_impaired">
+                                                            <label class="form-check-label" for="driverbehavior-impaired">
+                                                                Impaired
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-unlicensed" value="Unlicensed" data-table="db_unlicensed">
+                                                            <label class="form-check-label" for="driverbehavior-unlicensed">
+                                                                Unlicensed
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-unbelted" value="Unbelted" data-table="db_unbelted">
+                                                            <label class="form-check-label" for="driverbehavior-unbelted">
+                                                                Unbelted
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="driverbehavior-heavyvehicle" value="HeavyVehicle" data-table="db_heavy_vehicles">
+                                                            <label class="form-check-label" for="driverbehavior-heavyvehicle">
+                                                                Heavy Vehicle
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="border-bottom margin-top-15 margin-bot-15"></div>
+                                            <div>
+                                                <div class="margin-bot-5 lead">Other Vulnerable Road Users</div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="roadusers-mature" value="Mature" data-table="ru_mature_driver">
+                                                            <label class="form-check-label" for="roadusers-mature">
+                                                                Mature Driver
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="roadusers-younger" value="Younger" data-table="ru_younger_driver">
+                                                            <label class="form-check-label" for="roadusers-younger">
+                                                                Younger Driver
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="roadusers-motorcyclist" value="Motorcyclist" data-table="ru_motorcyclist">
+                                                            <label class="form-check-label" for="roadusers-motorcyclist">
+                                                                Motorcyclist
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="eaRadio" id="roadusers-workzone" value="WorkZone" data-table="ru_work_zone">
+                                                            <label class="form-check-label" for="roadusers-workzone">
+                                                                Work Zone
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- EMPHASIS AREA SELECTION SECTION -->
+
+                        <!-- Location Filters SECTION -->
+                        <div id="locationFiltersCard" class="card paused">
+                            <div class="card-header filter-heading" id="reportType">
+                                <h2 class="mb-0">
+                                    <button id="reportType-button" class="btn filter-heading-button" type="button" data-toggle="collapse" data-target="#reportType-collapse" aria-expanded="false" aria-controls="reportType-collapse">
+                                        2. Location <span id="locationFiltersLabel"> (New Jersey State)</span>
+                                        <div id="reportType-arrow" class="arrowIconUp"></div>
+                                    </button>
+                                </h2>
+                            </div>
+
+                            <div id="reportType-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#filterAccordion">
+                                <div class="card-body">
+                                    <!-- NEW JERSEY SUMMARY -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reportTypeRadios" id="nj-summary" value="nj-summary" checked>
+                                        <label class="form-check-label" for="nj-summary">
+                                            <div class="reportTypeOption">
+                                                <h6>New Jersey State</h6>
+                                                <div id="njHelp" class="tooltipIcon"></div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="border-bottom margin-top-15 margin-bot-15"></div>
+                                    <!-- NEW JERSEY SUMMARY -->
+
+                                    <!-- LOCATION SUMMARY -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reportTypeRadios" id="loc-summary" value="loc-summary">
+                                        <label class="form-check-label" for="loc-summary">
+                                            <div class="reportTypeOption">
+                                                <h6>County & Municipality</h6>
+                                                <div id="locHelp" class="tooltipIcon"></div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div id="locationSelectDiv" class="div-disabled">
+                                        <select class="selectpicker form-control margin-top-15" id="countyPicker" data-allow-clear="true" data-container="body" data-live-search="true" title="Select or search a County" data-hide-disabled="true" data-style="btn-filter" data-size=10 disabled>
+                                        </select>
+
+                                        <select class="selectpicker form-control margin-top-15" id="muniPicker" data-allow-clear="true" data-container="body" data-live-search="true" title="Select or search a Municipality" data-hide-disabled="true" data-style="btn-filter" data-size=10 disabled>
+                                        </select>
+                                    </div>
+
+                                    <div class="border-bottom margin-top-15 margin-bot-15"></div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reportTypeRadios" id="mpo-summary" value="mpo-summary">
+                                        <label class="form-check-label" for="mpo-summary">
+                                            <div class="reportTypeOption">
+                                                <h6>MPO</h6>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div id="mpoSelectDiv">
+                                        <select class="selectpicker form-control margin-top-15" id="mpoPicker" data-allow-clear="true" data-container="body" title="Select an MPO" data-hide-disabled="true" data-style="btn-filter" data-size=10 disabled>
+                                        </select>
+                                    </div>
+                                    <!-- LOCATION SUMMARY -->
+
+                                    <div class="border-bottom margin-top-15 margin-bot-15"></div>
+                                    <!-- LOCATION SUMMARY -->
+
+                                    <!-- SRI SUMMARY -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reportTypeRadios" id="sri-summary" value="sri-summary">
+                                        <label class="form-check-label" for="sri-summary">
+                                        <div class="reportTypeOption">
+                                          <h6>SRI Summary</h6>
+                                          <div id="sriHelp" class="tooltipIcon"></div>
+                                        </div>
+                                      </label>
+                                    </div>
+                                    <div id="sriSelectDiv" class="div-disabled">
+                                        <label class="mb-2" id="sriSearchCount">Showing 0 of 0 results</label>
+                                        <div id="sriPickerDiv">
+                                            <select class="selectpicker form-control" id="sriPicker" data-allow-clear="true" data-container="body" data-live-search="true" title="Select or search an SRI" data-hide-disabled="true" data-style="btn-filter" data-size=10 data-dropup-auto="false" disabled>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <!-- SRI SUMMARY -->
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Location Filters SECTION -->
+
+                        <!-- Report Parameters SECTION -->
+                        <div id="reportParametersCard" class="card paused">
+                            <div class="card-header filter-heading" id="paramsHeader">
+                                <h2 class="mb-0">
+                                    <button id="paramsHeader-button" class="btn btn-block filter-heading-button collapsed" type="button" data-toggle="collapse" data-target="#paramsHeader-collapse" aria-expanded="false" aria-controls="paramsHeader-collapse">
+                                        3. Temporal
+                                        <span id="temporalFiltersLabel"> (2016 - 2020)</span>
+                                        <div id="paramsHeader-arrow" class="arrowIconUp"></div>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="paramsHeader-collapse" class="collapse" aria-labelledby="headingThree" data-parent="#filterAccordion">
+                                <div class="card-body" style="border-bottom: none;">
+                                    <div class="reportTypeOption">
+                                        <h6>Crash Years</h6>
+                                        <div id="yearHelp" class="tooltipIcon"></div>
+                                    </div>
+                                    <div class="yearSelectionCombobox">
+                                        <select id="startYearPicker" class="selectpicker form-control yearSelectionBoxLeft" data-container="body" data-size=5 data-style="btn-filter-left" title="Start Year" data-size=10 data-dropup-auto="false">
+                                        </select>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text yearSelectionMiddle">to</span>
+                                        </div>
+                                        <select id="endYearPicker" class="selectpicker form-control yearSelectionBoxRight" data-style="btn-filter-right" title="End Year" data-size=5 data-dropup-auto="false">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Report Parameters SECTION -->
+
+                        <!-- CRASH ATTRIBUTES SECTION -->
+                        <!-- <div id="crashAttributesCard" class="card paused">
+                            <div class="card-header filter-heading" id="attributesHeader">
+                                <h2 class="mb-0">
+                                    <button id="attributesHeader-button"
+                                        class="btn btn-block filter-heading-button collapsed" type="button"
+                                        data-toggle="collapse" data-target="#attributesHeader-collapse"
+                                        aria-expanded="false" aria-controls="attributesHeader-collapse">
+                                        4. Report Parameters
+                                        <div id="attributesHeader-arrow" class="arrowIconUp"></div>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="attributesHeader-collapse" class="collapse" aria-labelledby="headingThree"
+                                data-parent="#filterAccordion">
+                                <div class="card-body" style="border-bottom: none;">
+                                    Select the crash attributes below to generate additional summary tables. Each table will
+                                    group crash
+                                    counts by categories under the selected crash attribute.
+                                    <div id="crash-attribute-list" class="list-group list-group-flush margin-top-15">
+                                    </div>
+
+                                    <div class="border-bottom margin-top-15 margin-bot-15"></div>
+                                    <div class="reportTypeOption">
+                                        <h6>Sort Method</h6>
+                                        <div id="sortHelp" class="tooltipIcon"></div>
+                                    </div>
+                                    <div class="row margin-top-15">
+                                        <div class="col-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sort" id="crash-sort"
+                                                    value="crash-sort" checked>
+                                                <label class="form-check-label" for="crash-sort">Crash Count</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sort" id="fatal-sort"
+                                                    value="fatal-sort">
+                                                <label class="form-check-label" for="fatal-sort">Fatal/Incapacitated</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> -->
+                        <!-- CRASH ATTRIBUTES SECTION -->
+                    </div>
+                    <div id="crashPopupDiv" class="hidden"></div>
+                    <div id="generateDiv" class="row border-top mt-auto">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-1" style="display:flex;">
+                                    <div class="alignmentClose whiteButtonToggle" title="Reset form" style="cursor:pointer;display:flex;" id="resetFiltersButton"></div>
+                                    <!-- <button id="generateReportButton" type="button"
+                                        class="btn btn-blue margin-left-15 ">Generate Report
+                                    </button> -->
+                                </div>
+                                <div class="col-11">
+                                    <div id="queryString"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statisticsColumn" class="col-lg-9 content-section" style="background-color: #dee2e6;">
+
+                <div id="generalEmphasisAreaChartsContainer">
+                    <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="AnnualBodiesChartTitle" class="chartTitle">Annual Fatalities and Serious Injuries</span>
+                                        <span id="AnnualBodiesChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="AnnualBodiesChartContainer" class="card-body">
+                                    <div id="AnnualBodiesChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="RollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <div id="rollingAverageHelp" class="tooltipIconSmall statisticsTip"></div>
+                                        <span id="RollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="RollingAverageChartContainer" class="card-body">
+                                    <div id="RollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="AgeBucketsChartTitle" class="chartTitle">Total Persons Count by Age and Gender</span>
+                                        <span id="AgeBucketsChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="AgeBucketsChartContainer" class="card-body">
+                                    <div id="AgeBucketsChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="CountyBodiesChartTitle" class="chartTitle">Fatalities & Serious Injuries by County</span>
+                                        <span id="CountyBodiesChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="CountyBodiesChartContainer" class="card-body">
+                                    <div id="CountyBodiesChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="RelatedBehaviorChartTitle" class="chartTitle">Related Behavior Breakdown</span>
+                                        <span id="RelatedBehaviorChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="RelatedBehaviorChartContainer" class="card-body">
+                                    <div id="RelatedBehaviorChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="CrashTypeChartTitle" class="chartTitle">Crash Type Breakdown (Top 6 Categories)</span>
+                                        <div id="crashTypeHelp" class="tooltipIconSmall statisticsTip"></div>
+                                        <span id="CrashTypeChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="CrashTypeChartContainer" class="card-body">
+                                    <div id="CrashTypeChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="roadUsersChartsContainer" class="hidden">
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="RoadUsersBreakDownChartTitle" class="chartTitle">Category Breakdown</span>
+                                        <span id="RoadUsersBreakDownChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="RoadUsersBreakDownChartContainer" class="card-body">
+                                    <div id="RoadUsersBreakDownChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="RoadUsersRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="RoadUsersRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="RoadUsersRollingAverageChartContainer" class="card-body">
+                                    <div id="RoadUsersRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="MatureRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="MatureRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="MatureRollingAverageChartContainer" class="card-body">
+                                    <div id="MatureRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="YoungRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="YoungRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="YoungRollingAverageChartContainer" class="card-body">
+                                    <div id="YoungRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="MotorcyclistRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="MotorcyclistRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="MotorcyclistRollingAverageChartContainer" class="card-body">
+                                    <div id="MotorcyclistRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="WorkzoneRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="WorkzoneRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="WorkzoneRollingAverageChartContainer" class="card-body">
+                                    <div id="WorkzoneRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+
+                <div id="driverBehaviorChartsContainer" class="hidden">
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="DriverBehaviorBreakDownChartTitle" class="chartTitle">Category Breakdown</span>
+                                        <span id="DriverBehaviorBreakDownChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="DriverBehaviorBreakDownChartContainer" class="card-body">
+                                    <div id="DriverBehaviorBreakDownChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row m-4">
+                        <div class="col-12 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="DriverBehaviorRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="DriverBehaviorRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="DriverBehaviorRollingAverageChartContainer" class="card-body">
+                                    <div id="DriverBehaviorRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="AggressiveRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="AggressiveRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="AggressiveRollingAverageChartContainer" class="card-body">
+                                    <div id="AggressiveRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="DrowsyDistractedRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="DrowsyDistractedRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="DrowsyDistractedRollingAverageChartContainer" class="card-body">
+                                    <div id="DrowsyDistractedRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="UnbeltedRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="UnbeltedRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="UnbeltedRollingAverageChartContainer" class="card-body">
+                                    <div id="UnbeltedRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="ImpairedRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="ImpairedRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="ImpairedRollingAverageChartContainer" class="card-body">
+                                    <div id="ImpairedRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="UnlicensedRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="UnlicensedRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="UnlicensedRollingAverageChartContainer" class="card-body">
+                                    <div id="UnlicensedRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-flex">
+                            <div class="card flex-fill">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <span id="HeavyVehicleRollingAverageChartTitle" class="chartTitle">5 Year Rolling Average</span>
+                                        <span id="HeavyVehicleRollingAverageChartLoading" class="loading chart"></span>
+                                    </h5>
+                                </div>
+                                <div id="HeavyVehicleRollingAverageChartContainer" class="card-body">
+                                    <div id="HeavyVehicleRollingAverageChart"></div>
+                                </div>
+                            </div>
+                        </div> -->
+                </div>
+            </div>
+
+            <div id="mapColumn" class="col-lg-9 content-section hidden" style="background-color: #dee2e6; padding: 0;">
+                <div class="map-wrapper">
+                    <div id="map"></div>
+                    <div id="customButtonsDiv">
+                        <!-- <button id="basemapToggleButton" class="btn streets-map" type="button" title="Toggle Streets or Satellite map"></button> -->
+                        <!-- <button id="toggleVisualization" class="btn heat" type="button" title="Toggle Clusters or Heatmap"></button> -->
+                    </div>
+
+                    <!-- <div class="card legend">
+                        <div class="card-header padding-0-0rem" id="headingOne">
+                            <h5 class="mb-0">
+                                <button class="btn width-100" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    &#x25E2 Legend
+                                </button>
+                            </h5>
+                        </div>
+    
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne">
+                            <div class="card-body padding-0-0rem">
+                                <div id="legend-container" class="">
+                                    <div class="card border-radius-0 border-0">
+                                        <div id="card-header-cty-muni" class="card-header">
+                                            <button class="btn btn-sm legend-group-label" type="button" aria-expanded="true" aria-controls="collapse-pane-cty-muni" data-target="#collapse-pane-cty-muni" data-toggle="collapse">◢ Crashes</button>
+                                        </div>
+                                        <div id="collapse-pane-cty-muni" class="collapse show font-size-legend">
+                                            <div class="card-body legend-subitem-div">
+                                                <div id="crashes-container">
+                                                    <div id="county-legend">
+                                                        <h6>County Level</h6>
+                                                        <div id="county-legend-loading" class="legend-loading"></div>
+                                                        <div id="county-legend-holder">
+                                                        </div>
+                                                    </div>
+    
+                                                    <div id="muni-legend" style="display: none">
+                                                        <h6>Municipality Level</h6>
+                                                        <div id="muni-legend-loading" class="legend-loading"></div>
+                                                        <div id="muni-legend-holder">
+                                                        </div>
+                                                    </div>
+    
+                                                    <div id="clusters-legend" style="display: none">
+                                                        <h6>Crash Clusters</h6>
+                                                        <div id="clusters-legend-loading" class="legend-loading"></div>
+                                                        <div id="clusters-legend-holder">
+                                                        </div>
+                                                    </div>
+    
+                                                    <div id="sri-legend" style="display: none">
+                                                        <h6>SRI Clusters</h6>
+                                                        <div id="sri-legend-loading" class="legend-loading"></div>
+                                                        <div id="sri-legend-holder">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+    
+    
+                                    <div id="other-legend"></div>
+    
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- 
+                        <div id="legend-container" class="legend hidden">
+                            <div id="cty-muni-container">
+                                <div id="county-legend">
+                                    <h6>Crashes (County)</h6>
+                                    <div id="county-legend-loading" class="legend-loading"></div>
+                                    <div id="county-legend-holder">
+                                    </div>
+                                </div>
+                                    
+                                <div id="muni-legend" style="display: none">
+                                    <h6>Crashes (Municipality)</h6>
+                                    <div id="muni-legend-loading" class="legend-loading"></div>
+                                    <div id="muni-legend-holder">
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div id="other-legend" class="margin-top-15">
+    
+                            </div>
+                        </div> -->
+
+                </div>
+            </div>
+
+            <div id="dataColumn" class="col-lg-9 content-section hidden" style="background-color: #dee2e6;">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div style="margin-bottom: 1em">The data below represents <b>all data</b> currently selected in the filter menu.</div>
+                            <div style="font-size: smaller">
+                                <b>Note:</b> Certain options will preclude some data sources from being used and displayed in the tables below (e.g. selecting "Pedestrian and Cyclist" will not query the occupant table in the database.)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row m-4">
+                    <div class="col-lg-12 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <span id="crashTableTitle" class="chartTitle">Crashes Selected</span>
+                                    <span id="crashTableLoading" class="loading hidden"></span>
+                                    <div class="chartButtons btn-group" role="group" aria-label="Button group with nested dropdown" style="float: right;">
+                                        <button type="button" class="btn btn-sm btn-secondary">Export</button>
+                                        <div class="btn-group" role="group">
+                                            <button id="crashColumnButton" type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Visible Columns</button>
+                                            <div id="crashColumnList" class="dropdown-menu dropdown-menu-right" aria-labelledby="crashColumnButton">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h5>
+                            </div>
+                            <div id="crashTableContainer" class="card-body table-body">
+                                <div class="row">
+                                    <div id="crashTableButtons" class="dt-button-container"></div>
+                                    <div id="crashTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="row m-4">
+                    <div class="col-lg-12 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <span id="sriTableTitle" class="chartTitle">Crashes Selected (SRI)</span>
+                                    <span id="sriTableLoading" class="loading hidden"></span>
+                                    <div class="chartButtons btn-group" role="group" aria-label="Button group with nested dropdown" style="float: right;">
+                                        <button type="button" class="btn btn-sm btn-secondary">Export</button>
+                                        <div class="btn-group" role="group">
+                                            <button id="sriColumnButton" type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Visible Columns</button>
+                                            <div id="sriColumnList" class="dropdown-menu dropdown-menu-right" aria-labelledby="sriColumnButton">
+                                                <a class="dropdown-item" href="#">Dropdown link</a>
+                                                <a class="dropdown-item" href="#">Dropdown link</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h5>
+                            </div>
+                            <div id="sriTableContainer" class="card-body table-body">
+                                <div class="row">
+                                    <div id="sriTableButtons" class="dt-button-container"></div>
+                                    <div id="sriTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="row m-4">
+                    <div class="col-lg-12 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <span id="occupantTableTitle" class="chartTitle">Occupants Involved in Crashes</span>
+                                    <!-- <div id="occupantTableTitleHelp" class="tooltipIconSmall statisticsTip"></div> -->
+                                    <span id="occupantTableLoading" class="loading hidden"></span>
+                                    <div class="chartButtons btn-group" role="group" aria-label="Button group with nested dropdown" style="float: right;">
+                                        <button type="button" class="btn btn-sm btn-secondary">Export</button>
+                                        <div class="btn-group" role="group">
+                                            <button id="occupantColumnButton" type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Visible Columns</button>
+                                            <div id="occupantColumnList" class="dropdown-menu dropdown-menu-right" aria-labelledby="occupantColumnButton">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h5>
+                            </div>
+                            <div id="occupantTableContainer" class="card-body table-body">
+                                <div class="row">
+                                    <div id="occupantTableButtons" class="dt-button-container"></div>
+                                    <div id="occupantTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row m-4">
+                    <div class="col-lg-12 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <div id="pedestrianTableTitle" class="chartTitle">Pedestrians Involved in Crashes</div>
+                                    <div id="pedestrianTableLoading" class="loading hidden"></div>
+                                    <div class="chartButtons btn-group" role="group" aria-label="Button group with nested dropdown" style="float: right;">
+                                        <button type="button" class="btn btn-sm btn-secondary">Export</button>
+                                        <div class="btn-group" role="group">
+                                            <button id="pedestrianColumnButton" type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Visible Columns</button>
+                                            <div id="pedestrianColumnList" class="dropdown-menu dropdown-menu-right" aria-labelledby="pedestrianColumnButton">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h5>
+                            </div>
+                            <div id="pedestrianContainer" class="card-body table-body">
+                                <div class="row">
+                                    <div id="pedestrianTableButtons" class="dt-button-container">
+
+                                    </div>
+                                    <div id="pedestrianTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="warning-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <center>
+                            <div class="sadSun margin-bot-15"></div>
+                        </center>
+                        <div id="modal-text">
+                            Please select at least one weather condition.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close-btn" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.10.25/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/datatables.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="js/bootstrap-tour-standalone.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap-select.js"></script>
+    <script src="https://unpkg.com/suncalc@1.8.0"></script>
+    <script src="https://unpkg.com/gl-matrix@2.3.2/dist/gl-matrix-min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+    <script src="https://js.arcgis.com/4.18/"></script>
+    <!-- <script type="text/javascript" src="https://greenman-pedersen-inc.github.io/ard_accidents_new.js"></script> -->
+    <script type="text/javascript" src="js/rcolor.min.js"></script>
+    <script type="text/javascript" src="app/main.js?v=2021.05.17"></script>
+</body>
+
+</html>
