@@ -1159,36 +1159,6 @@
             width: 25px;
         }
         
-        .rainHeader {
-            background-image: url(../img/rain.png);
-            width: 64px;
-            height: 64px;
-        }
-        
-        .snowHeader {
-            background-image: url(../img/snowman.png);
-            width: 64px;
-            height: 64px;
-        }
-        
-        .windHeader {
-            background-image: url(../img/wind.png);
-            width: 64px;
-            height: 64px;
-        }
-        
-        .sunHeader {
-            background-image: url(../img/sunrise.png);
-            width: 64px;
-            height: 64px;
-        }
-        
-        .sadSun {
-            background-image: url(../img/sad-sun.png);
-            width: 48px;
-            height: 48px;
-        }
-        
         .streets-map {
             background-image: url(../img/hybridGraphic.png);
         }

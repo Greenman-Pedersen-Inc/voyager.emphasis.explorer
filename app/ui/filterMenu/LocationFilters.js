@@ -9,7 +9,7 @@ define([
     queryString,
     SRIPicker
 ) {
-    return function LocationFilters(statisticsPage, mapPage, dataPage) {
+    return function LocationFilters(statisticsPage, mapPage, dataPage, credentials) {
         this.initiate = function(filterParameters, userInfo) {
             const mpos = countyHelper.getMpos();
             const counties = countyHelper.getCounties();
@@ -17,7 +17,7 @@ define([
             const muniPicker = document.getElementById('muniPicker');
             const countyPicker = document.getElementById('countyPicker');
 
-            let sriPicker = new SRIPicker(statisticsPage, mapPage, dataPage);
+            let sriPicker = new SRIPicker(statisticsPage, mapPage, dataPage, credentials);
 
             mpos.forEach(element => {
                 $("#mpoPicker").append('<option value=\'' + element.value + '\'>' + element.label + '</option>');

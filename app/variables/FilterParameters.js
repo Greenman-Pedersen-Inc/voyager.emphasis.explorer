@@ -21,8 +21,8 @@ define([
 
         this.locationFilters = {
             sri: { label: "", value: null },
-            cty_code: { label: "", value: null },
-            muni_code: { label: "", value: null },
+            mun_cty_co: { label: "", value: null },
+            mun_mu: { label: "", value: null },
         };
 
         this.reportParameters = {
@@ -48,31 +48,31 @@ define([
 
             if (subValue) {
                 self.subCategory.value = subValue;
-
-                if (self.subCategory.value == "DrowsyDistracted") {
+    
+                if (self.subCategory.value == "drowsy_distracted") {
                     self.subCategory.label = "Drowsy/Distracted";
-                } else if (self.subCategory.value == "HeavyVehicle") {
+                } else if (self.subCategory.value == "heavy_vehicle") {
                     self.subCategory.label = "Heavy Vehicle";
-                } else if (self.subCategory.value == "Younger") {
+                } else if (self.subCategory.value == "younger") {
                     self.subCategory.label = "Younger Driver";
-                } else if (self.subCategory.value == "Mature") {
+                } else if (self.subCategory.value == "mature") {
                     self.subCategory.label = "Mature Driver";
-                } else if (self.subCategory.value == "WorkZone") {
+                } else if (self.subCategory.value == "work_zone") {
                     self.subCategory.label = "Work Zone";
                 } else {
-                    self.subCategory.label = subValue;
+                    self.subCategory.label = capitalizeFirstLetter(subValue);
                 }
             } else {
                 self.subCategory.value = null;
                 self.subCategory.label = null;
-
+    
                 if (value) {
-                    if (value === 'pedbike') {
+                    if (value === 'ped_cyclist') {
                         self.category.label = 'Pedestrian & Cyclists';
-                    } else if (value === 'lanedeparture') {
+                    } else if (value === 'lane_departure') {
                         self.category.label = 'Lane Departure';
                     } else {
-                        self.category.label = value.charAt(0).toUpperCase() + value.slice(1);
+                        self.category.label = capitalizeFirstLetter(value);
                     }
                 }
             }
@@ -116,22 +116,22 @@ define([
             self.updateLabels();
         }
         this.updateCounty = function(label, value) {
-            self.locationFilters.cty_code.label = label;
-            self.locationFilters.cty_code.value = value;
+            self.locationFilters.mun_cty_co.label = label;
+            self.locationFilters.mun_cty_co.value = value;
             self.updateLabels();
         }
         this.updateMuni = function(label, value) {
-            self.locationFilters.muni_code.label = label;
-            self.locationFilters.muni_code.value = value;
+            self.locationFilters.mun_mu.label = label;
+            self.locationFilters.mun_mu.value = value;
             self.updateLabels();
         }
         this.updateMPO = function(label, value) {
-            self.locationFilters.cty_code.label = label;
-            self.locationFilters.cty_code.value = value;
+            self.locationFilters.mun_cty_co.label = label;
+            self.locationFilters.mun_cty_co.value = value;
             self.updateLabels();
         }
         this.hasLocation = function() {
-                return self.locationFilters.sri.value || self.locationFilters.cty_code.value || self.locationFilters.muni_code.value;
+                return self.locationFilters.sri.value || self.locationFilters.mun_cty_co.value || self.locationFilters.mun_mu.value;
             }
             //#endregion LOCATION FILTERS
 
@@ -170,74 +170,41 @@ define([
                     self.summary.label = "New Jersey State Summary";
                 } else if (self.summary.value === "loc-summary") {
                     self.summary.label = "County & Municipality Summary";
-                    // if (self.locationFilters.cty_code.label === "") {
-                    //     self.summary.label = "County & Municipality Summary";
-                    // } else if (!self.locationFilters.cty_code.label.includes(",")) {
-                    //     self.summary.label = "County & Municipality Summary (" + self.locationFilters.cty_code.label + " County)";
-                    // }
-                    // if (self.locationFilters.muni_code.label != "") {
-                    //     self.summary.label = self.summary.label.replace(")", "");
-                    //     self.summary.label += "-" + self.locationFilters.muni_code.label + ")";
-                    // }
                 } else if (self.summary.value === "mpo-summary") {
                     self.summary.label = "MPO";
-                    // if (self.locationFilters.cty_code.value) {
-                    //     if (self.locationFilters.cty_code.label.includes(",")) {
-                    //         self.summary.label = "MPO (" + self.locationFilters.cty_code.label + ")";
-                    //     }
-                    // } else self.summary.label = "MPO";
                 } else if (self.summary.value === "sri-summary") {
                     self.summary.label = "SRI Summary";
-                    // if (self.locationFilters.sri.label === "") {
-                    // } else {
-                    //     self.summary.label = "SRI Summary (" + self.locationFilters.sri.label + ")";
-                    // }
                 }
-
-                // if (self.category.value === "lanedeparture") {
-                //     self.category.label = "Lane Departure";
-                // } else if (self.category.value === "intersection") {
-                //     self.category.label = "Intersections";
-                // } else if (self.category.value === "driverbehavior") {
-                //     self.category.label = "Driver Behavior";
-                // } else if (self.category.value === "pedbike") {
-                //     self.category.label = "Pedestrians & Cyclists";
-                // } else if (self.category.value === "roadusers") {
-                //     self.category.label = "Other Vulnerable Road Users";
-                // }
-
-
             }
             //#endregion UPDATE LABELS
 
         this.createPayloadRequest = function() {
             var requestParams = {
-                User: self.User,
                 category: self.category.value,
                 subCategory: self.subCategory.value,
-                moduleType: self.moduleType,
                 startYear: self.temporalFilters.yearFilters.startYear,
                 endYear: self.temporalFilters.yearFilters.endYear,
                 sri: self.locationFilters.sri.value,
-                cty_code: self.locationFilters.cty_code.value,
-                muni_code: self.locationFilters.muni_code.value,
-                crashAttributes: self.reportParameters.crashAttributes.values.join(),
-                sort: self.reportParameters.sort.value,
-                f: self.f
+                mun_cty_co: self.locationFilters.mun_cty_co.value,
+                mun_mu: self.locationFilters.mun_mu.value,
             }
-
+    
             if (self.summary.value === "sri-summary") {
                 // remove the cty and muni attributes
-                requestParams.cty_code = null;
-                requestParams.muni_code = null;
+                delete requestParams.countyCode;
+                delete requestParams.muniCode;
             } else if (self.summary.value === "loc-summary") {
-                requestParams.sri = null;
+                delete requestParams.sri;
             } else if (self.summary.value === "nj-summary") {
-                requestParams.cty_code = null;
-                requestParams.muni_code = null;
-                requestParams.sri = null;
+                delete requestParams.countyCode;
+                delete requestParams.muniCode;
+                delete requestParams.sri;
             }
-
+    
+            for (const [key, value] of Object.entries(requestParams)) {
+                if (value === '' || value === null || value === undefined) delete requestParams[key];
+            }
+    
             return requestParams;
         }
 

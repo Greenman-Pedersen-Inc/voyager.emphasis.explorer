@@ -97,20 +97,20 @@ define([
                 map.mapFilter.update(filterParameters, layerChanged);
                 map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
 
-                if (filterParameters.locationFilters.muni_code.value && filterParameters.locationFilters.cty_code.value) {
-                    map.setFilter('county_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
-                    map.setFilter('municipality_outline_layer', ['all', ['==', 'mun_mu', filterParameters.locationFilters.muni_code.value],
-                        ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                if (filterParameters.locationFilters.mun_mu.value && filterParameters.locationFilters.mun_cty_co.value) {
+                    map.setFilter('county_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
+                    map.setFilter('municipality_outline_layer', ['all', ['==', 'mun_mu', filterParameters.locationFilters.mun_mu.value],
+                        ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                     ]);
-                    map.setFilter('county_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
-                    map.setFilter('muni_heatmap_layer', ['all', ['==', filterParameters.locationFilters.muni_code.value, ['get', 'mun_mu']],
-                        ['==', filterParameters.locationFilters.cty_code.value, ['get', 'mun_cty_co']]
+                    map.setFilter('county_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
+                    map.setFilter('muni_heatmap_layer', ['all', ['==', filterParameters.locationFilters.mun_mu.value, ['get', 'mun_mu']],
+                        ['==', filterParameters.locationFilters.mun_cty_co.value, ['get', 'mun_cty_co']]
                     ]);
 
                     let muniFeatures = map.querySourceFeatures('municipality_boundaries', {
                         sourceLayer: 'municipal_boundaries_of_nj',
-                        filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.muni_code.value],
-                            ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                        filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.mun_mu.value],
+                            ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                         ]
                     });
 
@@ -119,15 +119,15 @@ define([
                     } else {
                         let countyFeatures = map.querySourceFeatures('county_boundaries', {
                             sourceLayer: 'county_boundaries_of_nj',
-                            filter: ['==', filterParameters.locationFilters.cty_code.value, 'mun_cty_co']
+                            filter: ['==', filterParameters.locationFilters.mun_cty_co.value, 'mun_cty_co']
                         })
 
                         if (countyFeatures.length > 0) {
                             map.once('moveend', function() {
                                 let features = map.querySourceFeatures('municipality_boundaries', {
                                     sourceLayer: 'municipal_boundaries_of_nj',
-                                    filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.muni_code.value],
-                                        ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                                    filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.mun_mu.value],
+                                        ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                                     ]
                                 })
                                 map.goTo(features);
@@ -138,8 +138,8 @@ define([
                                 map.once('moveend', function() {
                                     let features = map.querySourceFeatures('municipality_boundaries', {
                                         sourceLayer: 'municipal_boundaries_of_nj',
-                                        filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.muni_code.value],
-                                            ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                                        filter: ['all', ['==', 'mun_mu', filterParameters.locationFilters.mun_mu.value],
+                                            ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                                         ]
                                     })
                                     map.goTo(features);
@@ -147,7 +147,7 @@ define([
 
                                 let features = map.querySourceFeatures('county_boundaries', {
                                     sourceLayer: 'county_boundaries_of_nj',
-                                    filter: ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                                    filter: ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                                 })
 
                                 map.goTo(features);
@@ -159,16 +159,16 @@ define([
                             })
                         }
                     }
-                } else if (filterParameters.locationFilters.cty_code.value) {
-                    map.setFilter('county_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
-                    map.setFilter('municipality_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
-                    map.setFilter('county_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
-                    map.setFilter('muni_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]);
+                } else if (filterParameters.locationFilters.mun_cty_co.value) {
+                    map.setFilter('county_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
+                    map.setFilter('municipality_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
+                    map.setFilter('county_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
+                    map.setFilter('muni_heatmap_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
 
                     map.once('moveend', function() {
                         let features = map.querySourceFeatures('county_boundaries', {
                             sourceLayer: 'county_boundaries_of_nj',
-                            filter: ['==', 'mun_cty_co', filterParameters.locationFilters.cty_code.value]
+                            filter: ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]
                         })
 
                         map.goTo(features);
@@ -197,8 +197,8 @@ define([
                 map.mapFilter.update(filterParameters, layerChanged);
                 map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
 
-                if (filterParameters.locationFilters.cty_code.value) {
-                    let countyList = filterParameters.locationFilters.cty_code.value
+                if (filterParameters.locationFilters.mun_cty_co.value) {
+                    let countyList = filterParameters.locationFilters.mun_cty_co.value
                     let countyFilter = ['any'].concat(countyList.split(',').map(value => ['==', 'mun_cty_co', value]))
 
                     map.setFilter('county_outline_layer', countyFilter);

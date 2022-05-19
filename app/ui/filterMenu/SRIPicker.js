@@ -1,17 +1,13 @@
 define([
-    './app/Utilities.js',
     "./app/staticData/urls.js",
-    "./app/components/filterMenu/queryString.js",
-    "esri/request",
+    "./app/components/filterMenu/queryString.js"
 ], function(
-    Utilities,
     urls,
-    queryString,
-    esriRequest,
+    queryString
 ) {
-    return function SRIPicker(statisticsPage, mapPage, dataPage) {
+    return function SRIPicker(statisticsPage, mapPage, dataPage, credentials) {
         var self = this;
-        this.initiate = function(filterParameters, username) {
+        this.initiate = function(filterParameters) {
             // sri picker search
             $('#sriPicker').selectpicker('refresh');
 
@@ -39,45 +35,59 @@ define([
                     return;
                 }
 
-                var filter = {
-                    User: username,
-                    SearchText: this.value,
-                    IncludeRoute: true,
-                    IncludeCounty: false,
-                    IncludeMunicipality: false,
-                    IncludeCaseNumber: false,
-                    IncludeGooglePlace: false,
-                    IncludeGoogleAddress: false,
-                    'f': 'json'
+                const filter = {
+                    searchText: this.value,
+                    includeRoute: true,
+                    includeCounty: false,
+                    includeMunicipality: false,
+                    includeCaseNumber: false,
+                    includeGooglePlace: false,
+                    includeGoogleAddress: false
                 };
 
-                esriRequest(urls.searchURL, { query: filter }).then(function(response) {
-                    // check if the response back from the server is the search that is expected
-                    // from the current input in the text box.
-                    if (response.data.SearchResults === undefined) return;
-                    if (response.data.SearchResults.length > 0) {
-                        $("#sriPicker").empty();
-                        var i = response.data.SearchResults.length;
-                        while (i--) {
-                            var sriCode = response.data.SearchResults[i].ResultID;
-                            var displayName = response.data.SearchResults[i].ResultText;
-                            $("#sriPicker").prepend('<option value=' + sriCode + '>' + displayName + '</option>');
-                        }
-                        $('#sriPicker').selectpicker('refresh');
-
-                        const searchCount = response.data.SearchResults.length;
-                        esriRequest(urls.searchCountURL, { query: filter }).then(function(count) {
-                            var totalCount = count.data.SearchResultsCount;
-                            if (totalCount < searchCount) {
-                                totalCount = searchCount;
-                            }
-                            var countString = searchCount + " of " + totalCount;
-                            $("#sriSearchCount").text("Showing " + countString + " results");
-                        });
-                    } else {
-                        $("#sriSearchCount").text("Showing 0 of 0 results");
+                const headers = {
+                    headers: {
+                        token: credentials.token,
                     }
-                }, Utilities.errorHandler);
+                }
+
+                fetch(urls.searchURL + Object.keys(filter).map(key => key + '=' + filter[key]).join('&'), headers)
+                    .then(response => {
+                        // check if the response back from the server is the search that is expected
+                        // from the current input in the text box.
+                        if (response.status === 200) {
+                            response.json()
+                                .then(data => {
+                                    $("#sriPicker").empty();
+                                    var i = data.SearchResults.length;
+                                    while (i--) {
+                                        var sriCode = data.SearchResults[i].ResultID;
+                                        var displayName = data.SearchResults[i].ResultText;
+                                        $("#sriPicker").prepend('<option value=' + sriCode + '>' + displayName + '</option>');
+                                    }
+                                    $('#sriPicker').selectpicker('refresh');
+        
+                                    const searchCount = data.SearchResults.length;
+                                    fetch(urls.searchCountURL + Object.keys(filter).map(key => key + '=' + filter[key]).join('&'), headers)
+                                        .then(response => {
+                                            if (response.status === 200) {
+                                                response.json()
+                                                    .then(data => {
+                                                        var totalCount = data.SearchResultsCount[0].count;
+                                                        if (totalCount < searchCount) {
+                                                            totalCount = searchCount;
+                                                        }
+                                                        var countString = searchCount + " of " + totalCount;
+                                                        $("#sriSearchCount").text("Showing " + countString + " results");
+                                                    })
+                                            }
+                                        });
+                                });
+                        } else {
+                            $("#sriSearchCount").text("Showing 0 of 0 results");
+                        }
+                    })
+                    .catch(errorHandler);
             });
 
             $('[data-id=sriPicker] .close').click(function() {
@@ -96,6 +106,13 @@ define([
                 mapPage.update(filterParameters, true);
                 dataPage.update(filterParameters);
             });
+
+            function errorHandler(error) {
+                console.error(error);
+                if (error.httpCode === 498 || error.details.error.details.httpStatus === 498) {
+                    alert("There is an issue searching for an SRI. Please refresh the page and try again.");
+                }
+            }
         }
     }
 })

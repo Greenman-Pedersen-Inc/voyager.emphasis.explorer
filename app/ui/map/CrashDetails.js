@@ -4,8 +4,7 @@ define([
     "./app/staticData/filterItems/api.js",
     "./app/CodeTranslator.js",
     "./js/lib/gridjs.production.min.js",
-    'esri/request'
-], function(Utilities, urls, api, CodeTranslator, gridjs, esriRequest) {
+], function(Utilities, urls, api, CodeTranslator, gridjs) {
     function GoogleMapsButton(feature) {
         var dirDegrees = 0; // North
         if (feature["veh_one_travel_dir_code"] === "04") {
@@ -28,12 +27,10 @@ define([
         this.button.target = "_blank";
     }
 
-    function PoliceFormButton(feature, filterParameters) {
+    function PoliceFormButton(feature, filterParameters, credentials) {
         const self = this;
         const requestParams = {
-            User: filterParameters.User,
-            DLN: feature.dln,
-            f: filterParameters.f
+            dlnNum: feature.dln,
         }
 
         this.domNode = document.createElement('a');
@@ -48,18 +45,37 @@ define([
             placement: 'right'
         });
 
-        esriRequest(urls.crashRecordURL, { query: requestParams }).then(function(response) {
-            if (response.data.url) {
-                self.domNode.href = response.data.url;
-                self.domNode.target = "_blank";
-                self.domNode.classList.remove('disabled');
-                self.tippyInstance.disable();
-            } else {
-                self.domNode.classList.add('disabled');
-                self.domNode.href = '';
-                self.tippyInstance.enable();
+        const reportUrlParams = Object.keys(requestParams).map(key => key + '=' + requestParams[key]).join('&');
+        const headers = {
+            headers: {
+                token: credentials.token
             }
-        }, Utilities.errorHandler);
+        }
+        fetch(urls.crashRecordURL + reportUrlParams, headers)
+            .then(response => {
+                if (response.status === 200) {
+                    response.json()
+                        .then(data => {
+                            if (data.url !== "") {
+                                self.domNode.href = data.url;
+                                self.domNode.target = "_blank";
+                                self.domNode.classList.remove('disabled');
+                                self.tippyInstance.disable();
+                            }
+                            else {
+                                policeFormButton.button.classList.add('disabled');
+                                policeFormButton.button.href = '';
+                                tippyInstance.enable();
+                            }
+                        })
+                }
+                else {
+                    self.domNode.classList.add('disabled');
+                    self.domNode.href = '';
+                    self.tippyInstance.enable();
+                }
+            })
+            .catch(Utilities.errorHandler);
     }
 
     function FeatureGrid(feature) {
@@ -95,8 +111,13 @@ define([
         }
     }
 
-    return function CrashDetails(map, features) {
+    return function CrashDetails(map, features, credentials) {
         const self = this;
+        const headers = {
+            headers: {
+                token: credentials.token
+            }
+        }
         const headerContainer = document.createElement('div');
         const crashButtonContainer = document.createElement('div');
         const popupTitle = document.createElement('div');
@@ -104,7 +125,7 @@ define([
         const enumerationControls = document.createElement('div');
         const leftButton = document.createElement('a');
         const rightButton = document.createElement('a');
-        const policeFormButton = new PoliceFormButton(features[0], map.filterParameters);
+        const policeFormButton = new PoliceFormButton(features[0], map.filterParameters, credentials);
         // const closeButton = document.createElement('a');
         const gridContainer = document.createElement('div');
         const featureGrid = new FeatureGrid(features[0]);
@@ -121,16 +142,6 @@ define([
         crashButtonContainer.style = 'display:inline-flex;';
         crashButtonContainer.className = 'mb-2';
 
-        // closeButton.type = 'button';
-        // closeButton.className = 'btn btn-white btn-sm';
-        // closeButton.innerHTML = "X";
-        // closeButton.style = 'border: 1px solid grey; border-radius: 3px; float: right;'
-        // closeButton.onclick = function() {
-        //     self.domNode.innerHTML = "";
-        //     self.domNode.classList.add('hidden');
-        //     document.getElementById('filterAccordianDiv').classList.remove('hidden');
-        // }
-
         popupTitle.style = 'float: left; font-size: 1.25em; padding-bottom: 0.3em';
         popupTitle.innerHTML = `Crash ID: ${features[0].crashid}`
         enumerationControls.style = 'float: right;'
@@ -141,9 +152,7 @@ define([
         leftButton.innerHTML = '<';
         leftButton.onclick = function(event) {
             const requestParams = {
-                User: map.filterParameters.User,
-                DLN: self.features[self.index].dln,
-                f: map.filterParameters.f
+                dlnNum: self.features[self.index].dln,
             }
 
             if (self.index === 0) {
@@ -157,18 +166,27 @@ define([
             popupTitle.innerHTML = `Crash ID: ${self.features[self.index].crashid}`
             googleMapsButton.button.href = `https://maps.google.com/maps?q=&layer=c&cbll=${self.features[self.index].calc_latitude},${self.features[self.index].calc_longitude}&cbp=12,&{dirDegrees},0,0,0`
 
-            esriRequest(urls.crashRecordURL, { query: requestParams }).then(function(response) {
-                if (response.data.url) {
-                    policeFormButton.domNode.href = response.data.url;
-                    policeFormButton.domNode.target = "_blank";
-                    policeFormButton.domNode.classList.remove('disabled');
-                    policeFormButton.tippyInstance.disable();
-                } else {
-                    policeFormButton.domNode.classList.add('disabled');
-                    policeFormButton.domNode.href = '';
-                    policeFormButton.tippyInstance.enable();
-                }
-            }, Utilities.errorHandler);
+            const reportUrlParams = Object.keys(requestParams).map(key => key + '=' + requestParams[key]).join('&');
+            fetch(urls.crashRecordURL + reportUrlParams, headers)
+                .then(response => {
+                    if (response.status === 200) {
+                        response.json()
+                            .then(data => {
+                                if (data.url !== "") {
+                                    policeFormButton.domNode.href = data.url;
+                                    policeFormButton.domNode.target = "_blank";
+                                    policeFormButton.domNode.classList.remove('disabled');
+                                    policeFormButton.tippyInstance.disable();
+                                }
+                                else {
+                                    policeFormButton.domNode.classList.add('disabled');
+                                    policeFormButton.domNode.href = '';
+                                    policeFormButton.tippyInstance.enable();
+                                }
+                            })
+                    }
+                })
+                .catch(Utilities.errorHandler);
         }
 
         indexLabelDiv.id = "indexlabeldiv";
@@ -182,9 +200,7 @@ define([
         rightButton.innerHTML = '>';
         rightButton.onclick = function(event) {
             const requestParams = {
-                User: map.filterParameters.User,
-                DLN: self.features[self.index].dln,
-                f: map.filterParameters.f
+                dlnNum: self.features[self.index].dln,
             }
 
             if (self.index === self.features.length - 1) {
@@ -197,18 +213,27 @@ define([
             popupTitle.innerHTML = `Crash ID: ${self.features[self.index].crashid}`
             googleMapsButton.button.href = `https://maps.google.com/maps?q=&layer=c&cbll=${self.features[self.index].calc_latitude},${self.features[self.index].calc_longitude}&cbp=12,&{dirDegrees},0,0,0`
 
-            esriRequest(urls.crashRecordURL, { query: requestParams }).then(function(response) {
-                if (response.data.url) {
-                    policeFormButton.domNode.href = response.data.url;
-                    policeFormButton.domNode.target = "_blank";
-                    policeFormButton.domNode.classList.remove('disabled');
-                    policeFormButton.tippyInstance.disable();
-                } else {
-                    policeFormButton.domNode.classList.add('disabled');
-                    policeFormButton.domNode.href = '';
-                    policeFormButton.tippyInstance.enable();
-                }
-            }, Utilities.errorHandler);
+            const reportUrlParams = Object.keys(requestParams).map(key => key + '=' + requestParams[key]).join('&');
+            fetch(urls.crashRecordURL + reportUrlParams, headers)
+                .then(response => {
+                    if (response.status === 200) {
+                        response.json()
+                            .then(data => {
+                                if (data.url !== "") {
+                                    policeFormButton.domNode.href = data.url;
+                                    policeFormButton.domNode.target = "_blank";
+                                    policeFormButton.domNode.classList.remove('disabled');
+                                    policeFormButton.tippyInstance.disable();
+                                }
+                                else {
+                                    policeFormButton.domNode.classList.add('disabled');
+                                    policeFormButton.domNode.href = '';
+                                    policeFormButton.tippyInstance.enable();
+                                }
+                            })
+                    }
+                })
+                .catch(errorHandler);
         }
 
         gridContainer.style = 'padding-bottom: 0.4em';

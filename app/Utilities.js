@@ -1,5 +1,6 @@
 define([], function() {
     function createModal(text, title = 'Error Information', redirect = false) {
+        console.log(text);
         let modal = document.createElement('div');
         modal.className = 'modal';
         modal.tabindex = '-1';
@@ -68,7 +69,7 @@ define([], function() {
         document.appendChild(modal);
     }
 
-    function errorHandler(error, message) {
+    function errorHandler(error) {
         if (error.httpCode === 498) {
             createModal('Your session has expired. In order to continue using Safety Voyager you must sign in again. Closing this dialog will redirect to the login where you will be able to sign in again.', 'Credentials Timed Out', true)
         } else if (error.name === 'identity-manager:aborted') {
