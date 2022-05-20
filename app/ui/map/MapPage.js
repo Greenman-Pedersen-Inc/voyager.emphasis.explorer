@@ -23,14 +23,30 @@ define([
     Legend,
     Popup
 ) {
-    return function MapPage(parent) {
-        mapboxgl.accessToken = 'pk.eyJ1Ijoic25vcGFjaGluZGEiLCJhIjoiY2s2MHZ6cmcwMDh4djNtbGM2ZXU2emZoaCJ9.SaFW_c_K4JPhEXOHtd6gJg';
+    return function MapPage(parent, credentials) {
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY29sbGk2NDg1IiwiYSI6ImNrMXNiZHQ1bzBlOTgzY28yMDdsamdncTkifQ.djpUCs34JkPsgWu70lUr_g';
 
         let map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/light-v10',
             center: [-74.53682654780151, 40.08820519710642],
             zoom: 7.5,
+            transformRequest: function (url) {
+                if (url.indexOf('gpi') >= 0 || url.indexOf('127.0.0.1') >= 0) {
+                    if (credentials && credentials.token) {
+                        return {
+                            url: url,
+                            headers: credentials
+                        };
+                    } else {
+                        console.log('no token submittted');
+                    }
+                } else {
+                    return {
+                        url: url
+                    };
+                }
+            }
         });
         let geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,

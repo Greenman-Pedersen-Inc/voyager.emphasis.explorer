@@ -33,7 +33,7 @@ define([
 
         this.filterParameters = new FilterParameters('lane_departure', 'Lane Departure');
 
-        var mapPage = new MapPage(this);
+        var mapPage = new MapPage(this, userInfo.credentials);
         var dataPage = new DataPage(this.filterParameters);
         var statisticPage = new StatisticsPage(userInfo.credentials);
 
