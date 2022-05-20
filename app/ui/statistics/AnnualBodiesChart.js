@@ -1,48 +1,37 @@
 define(
     [
-        './app/Utilities.js',
-        "./app/staticData/urls.js",
         "./app/components/statistics/MixedBarLineChart.js",
-        "esri/request",
     ],
     function(
-        Utilities,
-        urls,
         MixedBarLineChart,
-        esriRequest
     ) {
-        const dataAttribute = 'AnnualBodiesData';
-        const chart = document.getElementById('AnnualBodiesChart');
-        const chartContainer = document.getElementById('AnnualBodiesChartContainer');
-        const chartLoading = document.getElementById('AnnualBodiesChartLoading');
-        const chartTitle = document.getElementById('AnnualBodiesChartTitle');
-
         return function AnnualBodiesChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_AnnualStatistics;
+            const dataAttribute = 'annual_bodies';
+            const chart = document.getElementById('AnnualBodiesChart');
+            const chartContainer = document.getElementById('AnnualBodiesChartContainer');
+            const chartLoading = document.getElementById('AnnualBodiesChartLoading');
+            const chartTitle = document.getElementById('AnnualBodiesChartTitle');
+
             this.updateChartTitle = function(filterParameters) {
                 chartTitle.innerHTML = "Annual Fatalities and Serious Injuries - " + filterParameters.category.label;
             }
 
-            this.update = function(filterParameters) {
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
-
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new MixedBarLineChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+        
+                var chartData = statisticsData[dataAttribute];
+        
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+        
+                var formattedData = formatData(chartData, filterParameters.category.value);
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new MixedBarLineChart(formattedData, chart);
+                }
             }
         }
 

@@ -35,7 +35,7 @@ define([
 
         var mapPage = new MapPage(this);
         var dataPage = new DataPage(this.filterParameters);
-        var statisticPage = new StatisticsPage();
+        var statisticPage = new StatisticsPage(userInfo.credentials);
 
         var headers = new Headers();
         var reportButton = new ReportButton();

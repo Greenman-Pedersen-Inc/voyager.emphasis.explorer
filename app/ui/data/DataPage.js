@@ -82,13 +82,14 @@ define([
         }
 
         this.update = function(filterParameters) {
-            // if (filterParameters.locationFilters.sri.value) {
-            //     // self.sriTable.update(filterParameters);
-            // } else {
+            if (filterParameters.category.value == "ped_cyclist") {
+                self.occupantTable.update(filterParameters, true);      // empty table because there are no stats for occupants in ped/bike category
+            } 
+            else {
+                self.occupantTable.update(filterParameters);
+            }
             self.crashTable.update(filterParameters);
-            self.occupantTable.update(filterParameters);
             self.pedestrianTable.update(filterParameters);
-            // }
         }
     }
 })

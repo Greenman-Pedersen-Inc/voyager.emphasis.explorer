@@ -11,39 +11,63 @@ define(
         MixedBarLineChart,
         esriRequest
     ) {
-        const chart = document.getElementById('DriverBehaviorRollingAverageChart');
-        const chartContainer = document.getElementById('DriverBehaviorRollingAverageChartContainer');
-        const chartLoading = document.getElementById('DriverBehaviorRollingAverageChartLoading');
-        const chartTitle = document.getElementById('DriverBehaviorRollingAverageChartTitle');
 
         return function DriverBehaviorRollingAverageChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
-            this.updateChartTitle = function(filterParameters) {
+            const chart = document.getElementById('DriverBehaviorRollingAverageChart');
+            const chartContainer = document.getElementById('DriverBehaviorRollingAverageChartContainer');
+            const chartLoading = document.getElementById('DriverBehaviorRollingAverageChartLoading');
+            const chartTitle = document.getElementById('DriverBehaviorRollingAverageChartTitle');
+
+            this.updateChartTitle = function (filterParameters) {
                 chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.subCategory.label;
             }
-            this.update = function(filterParameters) {
-                var dataAttribute = filterParameters.subCategory.value + "AverageData";
+
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData['DriverBehaviorAverageData'][dataAttribute];
-
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters.subCategory.value);
-
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new MixedBarLineChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+        
+                const chartData = statisticsData[filterParameters.subcategory.value];
+        
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+        
+                var formattedData = formatData(chartData, filterParameters.subCategory.value);
+        
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new MixedBarLineChart(formattedData, chart);
+                }
             }
+
+            // const self = this;
+            // this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
+            // this.updateChartTitle = function(filterParameters) {
+            //     chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.subCategory.label;
+            // }
+            // this.update = function(filterParameters) {
+            //     var dataAttribute = filterParameters.subCategory.value + "AverageData";
+            //     chartLoading.classList.remove('hidden');
+            //     chartContainer.classList.remove('hidden');
+
+            //     var requestParams = filterParameters.createPayloadRequest();
+
+            //     return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
+            //         var chartData = response.data.EmphasisAreaData['DriverBehaviorAverageData'][dataAttribute];
+
+            //         chartContainer.classList.remove('hidden');
+            //         chartLoading.classList.add('hidden');
+
+            //         var formattedData = formatData(chartData, filterParameters.subCategory.value);
+
+            //         if (self.chart) {
+            //             self.chart.update(formattedData);
+            //         } else {
+            //             self.chart = new MixedBarLineChart(formattedData, chart);
+            //         }
+            //     }, Utilities.errorHandler);
+            // }
         }
 
         function formatData(data, categoryLabel) {

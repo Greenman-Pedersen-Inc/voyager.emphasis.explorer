@@ -70,7 +70,10 @@ define([], function() {
     }
 
     function errorHandler(error) {
-        if (error.httpCode === 498) {
+        if (error.hasOwnProperty("httpCode")) {
+            createModal('There was an issue getting data.');
+        }
+        else if (error.httpCode === 498) {
             createModal('Your session has expired. In order to continue using Safety Voyager you must sign in again. Closing this dialog will redirect to the login where you will be able to sign in again.', 'Credentials Timed Out', true)
         } else if (error.name === 'identity-manager:aborted') {
             createModal('Your session has expired. In order to continue using Safety Voyager you must sign in again. Closing this dialog will redirect to the login where you will be able to sign in again.', 'Credentials Timed Out', true)

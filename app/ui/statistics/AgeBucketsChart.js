@@ -1,61 +1,37 @@
 define(
     [
-        './app/Utilities.js',
-        "./app/staticData/urls.js",
         "./app/components/statistics/ColumnChart.js",
-        "esri/request",
     ],
     function(
-        Utilities,
-        urls,
         ColumnChart,
-        esriRequest
     ) {
-        const dataAttribute = 'AgeGroupData';
-        const chart = document.getElementById('AgeBucketsChart');
-        const chartContainer = document.getElementById('AgeBucketsChartContainer');
-        const chartLoading = document.getElementById('AgeBucketsChartLoading');
-        const chartTitle = document.getElementById('AgeBucketsChartTitle');
-
         return function AgeBucketChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_AgeStatistics;
-            // this.update = function (responseData) {
-            //     var chartData = responseData.data.EmphasisAreaData[dataAttribute];
-            //     chartLoading.classList.remove('hidden');
-            //     chartContainer.classList.remove('hidden');
-            //     chartLoading.classList.add('hidden');
+            const dataAttribute = 'age';
+            const chart = document.getElementById('AgeBucketsChart');
+            const chartContainer = document.getElementById('AgeBucketsChartContainer');
+            const chartLoading = document.getElementById('AgeBucketsChartLoading');
+            const chartTitle = document.getElementById('AgeBucketsChartTitle');
 
-            //     var formattedData = formatData(chartData);
-
-            //     if (self.chart) {
-            //         self.chart.update(formattedData);
-            //     } else {
-            //         self.chart = new ColumnChart(formattedData, chart);
-            //     }
-            // }
-            this.updateChartTitle = function(filterParameters) {
+            this.updateChartTitle = function (filterParameters) {
                 chartTitle.innerHTML = "Total Persons Count by Age and Gender - " + filterParameters.category.label;
             }
-            this.update = function(filterParameters) {
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
-
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new ColumnChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+                chartContainer.classList.remove('hidden');
+        
+                var chartData = statisticsData[dataAttribute];
+        
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+        
+                var formattedData = formatData(chartData, filterParameters.category.value);
+        
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new ColumnChart(formattedData, chart);
+                }
             }
         }
 
@@ -79,7 +55,7 @@ define(
                 "> 65": 11,
                 "N/A": 12
             }
-
+        
             var dataHolder = {
                 'Fatal': {
                     'Male': [],
@@ -95,16 +71,16 @@ define(
                     text: 'Total Persons Count',
                 },
                 labels: {
-                    formatter: function(val) {
+                    formatter: function (val) {
                         if (val) {
                             return val.toLocaleString("en-US");
                         } else { return 0; }
                     }
                 }
-            }, ];
-
+            },];
+        
             data.forEach(element => {
-                var labelPos = labelPosition[element['AgeBucket']];
+                var labelPos = labelPosition[element["AgeBucket"]];
                 var data = {
                     "order": labelPos,
                     "count": element['Persons_Count']
@@ -123,16 +99,16 @@ define(
                     }
                 }
             });
-
+        
             dataHolder['Serious_Injury']['Female'] = dataHolder['Serious_Injury']['Female'].sort((a, b) => a.order - b.order);
-
+        
             var series = [
                 { name: 'Female SI', data: Object.values(ConvertResultsToArray(dataHolder['Serious_Injury']['Female'], 'count')) },
                 { name: 'Female Fatality', data: Object.values(ConvertResultsToArray(dataHolder['Fatal']['Female'], 'count')) },
                 { name: 'Male SI', data: Object.values(ConvertResultsToArray(dataHolder['Serious_Injury']['Male'], 'count')) },
                 { name: 'Male Fatality', data: Object.values(ConvertResultsToArray(dataHolder['Fatal']['Male'], 'count')) },
             ];
-
+        
             return {
                 "yaxis": yaxis,
                 "series": series,
@@ -176,7 +152,7 @@ define(
                 }
             }
         }
-
+        
         function ConvertResultsToArray(objectArray, valueWord) {
             var returnArray = [];
             objectArray.forEach(element => {
@@ -184,29 +160,4 @@ define(
             });
             return returnArray;
         }
-
-        // return function AgeBucketsChart() {
-        //     const self = this;
-        //     this.requestUrl = urls.emphasisAreaDataURL;
-        //     this.update = function (filterParameters) {
-        //         AgeBucketsChartLoading.classList.remove('hidden');
-
-        //         var requestParams = filterParameters.createPayloadRequest();
-
-        //         return esriRequest(self.requestUrl, { query: requestParams }).then(function (response) {
-        //             var chartData = formatTimeData(response.data.TimeData);
-
-        //             AgeBucketsChartContainer.classList.remove('hidden');
-        //             AgeBucketsChartLoading.classList.add('hidden');
-
-        //             if (self.chart) {
-        //                 self.chart.update(chartData[0], chartData[1], timeSummaryChart);
-        //             } else {
-        //                 self.chart = new MixedBarLineChart(chartData[0], chartData[1], timeSummaryChart);
-        //             }
-
-        //             AgeBucketsChartTitle.innerHTML = "Annual Fatalities and Serious Injuries - " + filterParameters.summary.label;
-        //         }, Utilities.errorHandler);
-        //     }
-        // }
     });

@@ -11,50 +11,29 @@ define(
         BarNegativeChart,
         esriRequest
     ) {
-        const dataAttribute = 'RelatedBehaviorData';
-        const chart = document.getElementById('DriverBehaviorBreakDownChart');
-        const chartContainer = document.getElementById('DriverBehaviorBreakDownChartContainer');
-        const chartLoading = document.getElementById('DriverBehaviorBreakDownChartLoading');
-        const chartTitle = document.getElementById('DriverBehaviorBreakDownChartTitle');
-
         return function DriverBehaviorBreakdownChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_AnnualStatistics;
-            // this.update = function (responseData, filterParameters) {
-            //     var chartData = responseData.data.EmphasisAreaData[dataAttribute];
-            //     chartLoading.classList.remove('hidden');
-            //     chartContainer.classList.remove('hidden');
-            //     chartLoading.classList.add('hidden');
+            const chart = document.getElementById('DriverBehaviorBreakDownChart');
+            const chartContainer = document.getElementById('DriverBehaviorBreakDownChartContainer');
+            const chartLoading = document.getElementById('DriverBehaviorBreakDownChartLoading');
+            const chartTitle = document.getElementById('DriverBehaviorBreakDownChartTitle');
 
-            //     var formattedData = formatData(chartData, filterParameters);
-
-            //     if (self.chart) {
-            //         self.chart.update(formattedData);
-            //     } else {
-            //         self.chart = new BarNegativeChart(formattedData, chart);
-            //     }
-            // }
             this.updateChartTitle = function() {
                 chartTitle.innerHTML = "Driver Behavior Breakdown";
             }
-            this.update = function(filterParameters) {
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters);
-
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new BarNegativeChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+                const chartData = statisticsData[filterParameters.subCategory.value];
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+        
+                var formattedData = formatData(chartData, filterParameters);
+        
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new BarNegativeChart(formattedData, chart);
+                }
             }
         }
 
@@ -67,34 +46,19 @@ define(
                 { name: 'Fatality', data: [] },
                 { name: 'Serious Injury', data: [] }
             ];
-            // var labels = ['Aggressive', 'Impaired', 'Drowsy/Distracted', 'Unbelted', 'Unlicensed', 'Heavy Vehicle'];
             var labels = [filterParameters.subCategory.label];
 
-            var dataAttributes = [
-                'AggressiveData',
-                'ImpairedData',
-                'DrowsyDistractedData',
-                'UnbeltedData',
-                'UnlicensedData',
-                'HeavyVehicleData'
-            ]
-
-            dataAttributes.forEach(attr => {
-                if (attr == filterParameters.subCategory.value + "Data") {
-                    var siCount = 0;
-                    var fatalCount = 0;
-                    if (data[attr].length > 0) {
-                        data[attr].forEach(yearData => {
-                            if (yearData.Year >= filterParameters.getStartYear() && yearData.Year <= filterParameters.getEndYear()) {
-                                siCount += yearData['Serious_Injury'];
-                                fatalCount += -1 * (yearData['Fatal']);
-                            }
-                        });
-                        series[0].data.push(fatalCount);
-                        series[1].data.push(siCount);
-                    }
+            var siCount = 0;
+            var fatalCount = 0;
+            data.forEach(dataPoint => {
+                if (dataPoint.Year >= filterParameters.getStartYear() && dataPoint.Year <= filterParameters.getEndYear()) {
+                    siCount += dataPoint['Serious_Injury'];
+                    fatalCount += -1 * (dataPoint['Fatal']);
                 }
             });
+
+            series[0].data.push(fatalCount);
+            series[1].data.push(siCount);
 
             return {
                 "labels": labels,

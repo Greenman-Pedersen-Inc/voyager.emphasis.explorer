@@ -189,7 +189,7 @@ define(
 
                 self.currentTableFileName = 'sri_data_' + filterParameters.category.value;
 
-                if (filterParameters.category.value == "pedbike") {
+                if (filterParameters.category.value == "ped_cyclist") {
                     if (self.table) {
                         self.table.table.clear();
                         self.table.table.draw();

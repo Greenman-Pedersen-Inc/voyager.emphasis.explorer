@@ -11,40 +11,35 @@ define(
         PieChart,
         esriRequest
     ) {
-        const dataAttribute = 'CrashTypeData';
-        const chart = document.getElementById('CrashTypeChart');
-        const chartContainer = document.getElementById('CrashTypeChartContainer');
-        const chartLoading = document.getElementById('CrashTypeChartLoading');
-        const chartTitle = document.getElementById('CrashTypeChartTitle');
 
         return function CrashTypeChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_CrashTypeStatistics;
+            const dataAttribute = 'crash_type';
+            const chart = document.getElementById('CrashTypeChart');
+            const chartContainer = document.getElementById('CrashTypeChartContainer');
+            const chartLoading = document.getElementById('CrashTypeChartLoading');
+            const chartTitle = document.getElementById('CrashTypeChartTitle');
 
             this.updateChartTitle = function(filterParameters) {
                 chartTitle.innerHTML = "Crash Type Breakdown (Top 6 Categories) - " + filterParameters.category.label;
             }
 
-            this.update = function(filterParameters) {
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
-
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new PieChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+        
+                var chartData = statisticsData[dataAttribute];
+        
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+    
+                var formattedData = formatData(chartData, filterParameters.category.value);
+    
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new PieChart(formattedData, chart);
+                }
             }
         }
 

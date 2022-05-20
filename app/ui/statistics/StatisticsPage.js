@@ -1,5 +1,6 @@
 define([
     "./app/staticData/urls.js",
+    "./app/Utilities.js",
     "./app/ui/statistics/AgeBucketsChart.js",
     "./app/ui/statistics/AnnualBodiesChart.js",
     "./app/ui/statistics/CountyBodiesChart.js",
@@ -12,6 +13,7 @@ define([
     "./app/ui/statistics/DriverBehavior/RollingAverageChart.js",
 ], function(
     urls,
+    Utilities,
     AnnualBodiesChart,
     RollingAverageChart,
     AgeBucketsChart,
@@ -23,9 +25,14 @@ define([
     DriverBehaviorBreakdownChart,
     DriverBehaviorRollingAverageChart,
 ) {
-    return function StatisticsPage() {
+    return function StatisticsPage(credentials) {
         const self = this;
-        this.requestUrl = urls.emphasisAreaDataURL;
+        this.requestUrl = urls.emphasisAreaStatistics;
+        const headers = {
+            headers: {
+                token: credentials.token
+            }
+        }
 
         // Generic EA charts
         this.annualBodiesChart = new AnnualBodiesChart();
@@ -66,7 +73,7 @@ define([
             // make fetch request to get all chart data
             var requestParams = filterParameters.createPayloadRequest();
             var searchParams = new URLSearchParams(requestParams);
-            fetch(self.requestUrl + searchParams.toString())
+            fetch(self.requestUrl + searchParams.toString(), headers)
                 .then((response) => {
                     if (response.status === 200) {
                         response.json()
@@ -110,39 +117,6 @@ define([
                         Utilities.errorHandler(response.error, response.message);
                     }
                 });
-
-            // if (filterParameters.category.value === 'road_users') {
-            //     Promise.all([
-            //         self.roadUsersBreakdownChart.update(filterParameters),
-            //         self.roadUsersRollingAverageChart.update(filterParameters),
-            //     ]).then(() => {
-            //         document.querySelectorAll('#filterAccordion .card').forEach(element => {
-            //             element.classList.remove('paused');
-            //         });
-            //     });
-            // } else if (filterParameters.category.value === 'driver_behavior') {
-            //     Promise.all([
-            //         self.driverBehaviorBreakdownChart.update(filterParameters),
-            //         self.driverBehaviorRollingAverageChart.update(filterParameters),
-            //     ]).then(() => {
-            //         document.querySelectorAll('#filterAccordion .card').forEach(element => {
-            //             element.classList.remove('paused');
-            //         });
-            //     });
-            // } else {
-            //     Promise.all([
-            //         self.annualBodiesChart.update(filterParameters),
-            //         self.crashTypeChart.update(filterParameters),
-            //         self.rollingAverageChart.update(filterParameters),
-            //         self.ageBucketsChart.update(filterParameters),
-            //         self.countyBodiesChart.update(filterParameters),
-            //         self.relatedBehaviorChart.update(filterParameters),
-            //     ]).then(() => {
-            //         document.querySelectorAll('#filterAccordion .card').forEach(element => {
-            //             element.classList.remove('paused');
-            //         });
-            //     });
-            // }
         }
 
         function UpdateChartTitles(filterParameters) {

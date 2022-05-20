@@ -11,53 +11,62 @@ define(
         MixedBarLineChart,
         esriRequest
     ) {
-        const dataAttribute = 'RollingAverageData';
-        const chart = document.getElementById('RollingAverageChart');
-        const chartContainer = document.getElementById('RollingAverageChartContainer');
-        const chartLoading = document.getElementById('RollingAverageChartLoading');
-        const chartTitle = document.getElementById('RollingAverageChartTitle');
         return function RollingAverageChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
+            const dataAttribute = 'annual_bodies_rolling_average';
+            const chart = document.getElementById('RollingAverageChart');
+            const chartContainer = document.getElementById('RollingAverageChartContainer');
+            const chartLoading = document.getElementById('RollingAverageChartLoading');
+            const chartTitle = document.getElementById('RollingAverageChartTitle');
 
-            // this.update = function (responseData) {
-            //     var chartData = responseData.data.EmphasisAreaData[dataAttribute];
-            //     chartLoading.classList.remove('hidden');
-            //     chartContainer.classList.remove('hidden');
-            //     chartLoading.classList.add('hidden');
-
-            //     var formattedData = formatData(chartData);
-
-            //     if (self.chart) {
-            //         self.chart.update(formattedData);
-            //     } else {
-            //         self.chart = new MixedBarLineChart(formattedData, chart);
-            //     }
-            // }
-            this.updateChartTitle = function(filterParameters) {
+            this.updateChartTitle = function (filterParameters) {
                 chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.category.label;
             }
-
-            this.update = function(filterParameters) {
+        
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
-
-                var requestParams = filterParameters.createPayloadRequest();
-
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
-
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
-
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new MixedBarLineChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+        
+                var chartData = statisticsData[dataAttribute];
+        
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
+        
+                var formattedData = formatData(chartData, filterParameters.subCategory.value);
+        
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new MixedBarLineChart(formattedData, chart);
+                }
             }
+
+            // this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
+
+            // this.updateChartTitle = function(filterParameters) {
+            //     chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.category.label;
+            // }
+
+            // this.update = function(filterParameters) {
+            //     chartLoading.classList.remove('hidden');
+            //     chartContainer.classList.remove('hidden');
+
+            //     var requestParams = filterParameters.createPayloadRequest();
+
+            //     return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
+            //         var chartData = response.data.EmphasisAreaData[dataAttribute];
+
+            //         chartContainer.classList.remove('hidden');
+            //         chartLoading.classList.add('hidden');
+
+            //         var formattedData = formatData(chartData, filterParameters.category.value);
+            //         if (self.chart) {
+            //             self.chart.update(formattedData);
+            //         } else {
+            //             self.chart = new MixedBarLineChart(formattedData, chart);
+            //         }
+            //     }, Utilities.errorHandler);
+            // }
         }
 
         function formatData(data, categoryLabel) {

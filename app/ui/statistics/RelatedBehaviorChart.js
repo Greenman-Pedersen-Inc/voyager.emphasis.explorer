@@ -1,48 +1,36 @@
 define(
     [
-        './app/Utilities.js',
-        "./app/staticData/urls.js",
         "./app/components/statistics/PieChart.js",
-        "esri/request",
     ],
-    function(
-        Utilities,
-        urls,
+    function (
         PieChart,
-        esriRequest
     ) {
-        const dataAttribute = 'RelatedBehaviorData';
-        const chart = document.getElementById('RelatedBehaviorChart');
-        const chartContainer = document.getElementById('RelatedBehaviorChartContainer');
-        const chartLoading = document.getElementById('RelatedBehaviorChartLoading');
-        const chartTitle = document.getElementById('RelatedBehaviorChartTitle');
-
         return function RelatedBehaviorChart() {
             const self = this;
-            this.requestUrl = urls.emphasisArea_RelatedBehaviorStatistics;
-            this.updateChartTitle = function(filterParameters) {
+            const chart = document.getElementById('RelatedBehaviorChart');
+            const chartContainer = document.getElementById('RelatedBehaviorChartContainer');
+            const chartLoading = document.getElementById('RelatedBehaviorChartLoading');
+            const chartTitle = document.getElementById('RelatedBehaviorChartTitle');
+
+            this.updateChartTitle = function (filterParameters) {
                 chartTitle.innerHTML = "Related Behavior Breakdown - " + filterParameters.category.label;
             }
-            this.update = function(filterParameters) {
+            this.update = function (statisticsData, filterParameters) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
 
-                var requestParams = filterParameters.createPayloadRequest();
+                var chartData = statisticsData;
 
-                return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-                    var chartData = response.data.EmphasisAreaData[dataAttribute];
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.add('hidden');
 
-                    chartContainer.classList.remove('hidden');
-                    chartLoading.classList.add('hidden');
+                var formattedData = formatData(chartData, filterParameters.category.value);
 
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-
-                    if (self.chart) {
-                        self.chart.update(formattedData);
-                    } else {
-                        self.chart = new PieChart(formattedData, chart);
-                    }
-                }, Utilities.errorHandler);
+                if (self.chart) {
+                    self.chart.update(formattedData);
+                } else {
+                    self.chart = new PieChart(formattedData, chart);
+                }
             }
         }
 
@@ -54,16 +42,16 @@ define(
             var series = [];
             var labels = ['Aggressive', 'Impaired', 'Drowsy/Distracted', 'Unbelted', 'Unlicensed'];
             var dataAttributes = [
-                'AggressiveData',
-                'ImpairedData',
-                'DrowsyDistractedData',
-                'UnbeltedData',
-                'UnlicensedData'
+                'aggressive',
+                'impaired',
+                'drowsy_distracted',
+                'unbelted',
+                'unlicensed'
             ]
 
             dataAttributes.forEach(attr => {
                 if (data[attr].length > 0) {
-                    series.push(data[attr][0]['Serious_Injury']);
+                    series.push(data[attr][0]['Total']);
                 } else { series.push(0); }
             });
 
@@ -82,10 +70,6 @@ define(
                     },
                 },
                 "dataLabels": {
-                    // formatter(val, opts) {
-                    //     const name = opts.w.globals.labels[opts.seriesIndex]
-                    //     return [name, val.toFixed(1) + '%']
-                    // },
                     enabled: true,
                     style: {
                         colors: ["#304758"]
@@ -113,6 +97,4 @@ define(
                 }
             }
         }
-
-
     });

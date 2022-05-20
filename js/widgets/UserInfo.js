@@ -237,7 +237,8 @@ define([
             const dataURL = url + searchParams.toString();
             return fetch(dataURL, {
                 headers: {
-                    credentials: JSON.stringify(self.credentials)
+                    credentials: JSON.stringify(self.credentials),
+                    token: self.credentials.token
                 }
             })
                 .then((response) => {
