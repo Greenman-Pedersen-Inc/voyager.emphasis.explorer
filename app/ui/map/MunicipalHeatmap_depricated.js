@@ -1,9 +1,13 @@
+// backup copy of old Municipal heatmap implementation
+
 define([
     "./app/staticData/filterItems/api.js",
     "./app/ui/map/MapSources.js",
+    "./app/ui/map/Popup.js",
 ], function(
     api,
     MapSources,
+    Popup
 ) {
     function createColorRamp(features) {
         let colorRange = [];
@@ -27,8 +31,6 @@ define([
                 range: rangeValue
             };
         }
-
-
 
         if (features.length > 0) {
             let colorArray = ['#a1dbb2', '#fee5ad', '#faca66', '#f7a541', '#f45d4c'];
@@ -55,7 +57,7 @@ define([
                 }
             } else if (bounds.range <= 1) {
                 colorRange.push({
-                    from: 1,
+                    from: bounds.min,
                     to: bounds.max,
                     color: '#f45d4c',
                 });
@@ -83,10 +85,10 @@ define([
             colorFill.push(item.color);
         });
 
-        if (colorRamp.length > 1) {
-            colorFill.push(colorRamp[colorRamp.length - 1].to);
-            colorFill.push(colorRamp[colorRamp.length - 1].color);
-        }
+        // if (legendScheme.length > 1) {
+        //     colorFill.push(legendScheme[legendScheme.length - 1].to);
+        //     colorFill.push(legendScheme[legendScheme.length - 1].color);
+        // }
 
         return colorFill;
     }
@@ -111,11 +113,10 @@ define([
         }
     }
 
-    return function MunicipalHeatmap(map, sourceID, layerID, beforeLayer, legend) {
+    return function MunicipalHeatmap(map, sourceID, layerID, beforeLayer) {
         const self = this;
         const mapSources = new MapSources(map);
         const layerDefinition = mapSources.getMapLayerData(layerID);
-        const heatMapQuery = api.GetMuniHeatmapQuery(map.filterParameters);
 
         Object.defineProperty(this, 'disabled', {
             get: function() {
@@ -124,7 +125,9 @@ define([
             set: function(value) {
                 this['_disabled'] = value;
 
+                // layerDefinition.layers.forEach(layer => {
                 map.getLayer(layerDefinition.id).disabled = value;
+                // })
 
                 if (value) {
                     map.getLayer(layerDefinition.id).visibility = 'none';
@@ -135,47 +138,7 @@ define([
             enumerable: false
         });
 
-        this.sourceLayer = layerDefinition.sourceLayer;
-        this.update = function(source) {
-            if (self.legendCard && map.getLayer(layerDefinition.id).visible) {
-                self.legendCard.loadingIndicator.classList.remove('hidden');
-            }
-
-            if (map.getSource(layerDefinition.source) && map.isSourceLoaded(layerDefinition.source)) {
-                let visibleFeatures = map.queryRenderedFeatures({ layers: ['municipality_outline_layer'] }).map(feature => feature.properties.mun_cty_co + feature.properties.mun_mu);
-                let sourceFeatures = map.querySourceFeatures(layerDefinition.source, {
-                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
-                }).filter(feature => visibleFeatures.includes(`${feature.properties.mun_cty_co}${feature.properties.mun_mu}`))
-                let colorRamp = createColorRamp(sourceFeatures);
-
-                updateHeatmapPaint(map, colorRamp, layerDefinition);
-
-                if (self.legendCard) {
-                    self.legendCard.loadingIndicator.classList.add('hidden');
-                    self.legendCard.update(map.filterParameters, sourceFeatures, 'visible', true, true, true);
-                }
-            }
-        }
-        this.addToMap = function() {
-            map.addSource(layerDefinition.source, {
-                type: 'vector',
-                tiles: [heatMapQuery.tileEndpoint],
-                attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
-            });
-            map.addLayer(layerDefinition, beforeLayer);
-        }
-
-        function initializeLayer(response) {
-            if (map.getSource(layerDefinition.source) && map.isSourceLoaded(layerDefinition.source)) {
-                let features = map.querySourceFeatures(layerDefinition.source, {
-                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
-                });
-
-                self.legendCard = map.legend.addLayer(layerDefinition, features, 'visible', true, true, true);
-                map.off('sourcedata', initializeLayer);
-                map.on('sourcedata', self.update);
-            }
-        }
+        var heatMapQuery = api.GetMuniHeatmapQuery(map.filterParameters);
 
         layerDefinition['source-layer'] = heatMapQuery.sourceLayer;
 
@@ -185,8 +148,21 @@ define([
             attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
         });
         map.addLayer(layerDefinition, beforeLayer);
-        map.on('sourcedata', initializeLayer);
 
+        function initializeLayer(response) {
+            if (map.getSource(layerDefinition.source) && map.isSourceLoaded(layerDefinition.source)) {
+                let features = map.querySourceFeatures(layerDefinition.source, {
+                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
+                });
+
+                self.legendCard = map.legend.addLayer(layerDefinition, features, 'visible', true, true, true);
+
+                map.off('sourcedata', initializeLayer);
+                map.on('sourcedata', self.update);
+            }
+        }
+
+        map.on('sourcedata', initializeLayer);
         if (layerDefinition.mouseleave) {
             map.on('mouseleave', layerDefinition.id, layerDefinition.mouseleave);
         } else {
@@ -200,6 +176,46 @@ define([
             map.on('mouseleave', layerDefinition.id, function() {
                 map.getCanvas().style.cursor = '';
             });
+        }
+
+        this.addToMap = function() {
+            map.addSource(layerDefinition.source, {
+                type: 'vector',
+                tiles: [heatMapQuery.tileEndpoint],
+                attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
+            });
+            map.addLayer(layerDefinition, beforeLayer);
+        }
+        this.update = function(features) {
+            if (self.legendCard) {
+                self.legendCard.loadingIndicator.classList.remove('hidden');
+            }
+
+            if (map.getSource(layerDefinition.source) && map.isSourceLoaded(layerDefinition.source)) {
+                let visibleFeatures = map.queryRenderedFeatures({ layers: ['municipality_outline_layer'] }).map(feature =>
+                    `${feature.properties.mun_cty_co}${feature.properties.mun_mu}`
+                );
+                // let sourceFeatures = map.querySourceFeatures(layerDefinition.source, {
+                //     sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
+                // }).filter(feature => visibleFeatures.includes(`${feature.properties.mun_cty_co}${feature.properties.mun_mu}`))
+
+
+                let sourceFeatures = map.querySourceFeatures(layerDefinition.source, {
+                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
+                });
+                console.log(sourceFeatures);
+                sourceFeatures.filter(feature => visibleFeatures.includes(feature.properties.mun_cty_co));
+
+
+                let colorRamp = createColorRamp(sourceFeatures);
+
+                updateHeatmapPaint(map, colorRamp, layerDefinition);
+
+                if (self.legendCard) {
+                    self.legendCard.loadingIndicator.classList.add('hidden');
+                    self.legendCard.update(map.filterParameters, sourceFeatures, 'visible', true, true, true);
+                }
+            }
         }
     }
 })

@@ -20,8 +20,8 @@ define([
                 }
                 var tableBase = emphasisAreaSelections.getTable(catValue);
 
-                setLayerSource('county_heatmap_layer', 'county_heatmap', tableBase + "_crashes_cty");
-                setLayerSource('muni_heatmap_layer', 'muni_heatmap', tableBase + "_crashes_muni");
+                setLayerSource('county_heatmap_layer', 'county_heatmap', tableBase + '_crashes_cty');
+                setLayerSource('muni_heatmap_layer', 'muni_heatmap', tableBase + '_crashes_muni');
             }
 
             var countyHeatMapQuery = api.GetCountyHeatmapQuery(filterParameters);

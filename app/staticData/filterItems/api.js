@@ -1,32 +1,12 @@
 define([
     "./app/staticData/urls.js",
     "./app/staticData/filterItems/emphasisAreaSelections.js"
-], function(urls, emphasisAreaSelections) {
+], function(
+    urls, 
+    emphasisAreaSelections
+){
     function CreateWhereClause(filterParameters, geomColumn, type = null) {
         var queryStringArray = [];
-
-        // if (filterParameters.summary.value !== "nj-summary") {
-        //     if (type == "muni" || type == "county") {
-        //         if (filterParameters.locationFilters.mun_cty_co.value) {
-        //             if (filterParameters.locationFilters.mun_cty_co.value.includes(",")) {
-        //                 var strArray = [];
-        //                 var splitString = filterParameters.locationFilters.mun_cty_co.value.split(",");
-        //                 splitString.forEach(element => {
-        //                     strArray.push("'" + element + "'");
-        //                 });
-        //                 queryStringArray.push("mun_cty_co IN (" + strArray.join(",") + ")");
-        //             } else {
-        //                 queryStringArray.push("mun_cty_co = '" + filterParameters.locationFilters.mun_cty_co.value + "'");
-        //             }
-        //         }
-        //         if (filterParameters.locationFilters.mun_mu.value) {
-        //             queryStringArray.push("mun_mu = '" + filterParameters.locationFilters.mun_mu.value + "'");
-        //         }
-        //     } else if (type == "sri") {
-        //         queryStringArray.push("calc_sri = '" + filterParameters.locationFilters.sri.value + "'");
-        //         //joinedString += " GROUP BY calc_sri, calc_milepost, " + geomColumn;
-        //     }
-        // }
 
         if (filterParameters.summary.value !== "nj-summary") {
             if (filterParameters.summary.value == 'loc-summary' || filterParameters.summary.value == 'mpo-summary') {
@@ -201,10 +181,9 @@ define([
         var whereClause = CreateWhereClause(filterParameters, "wkb_geometry", "county");
         var searchParams = new URLSearchParams({
             geom_column: "wkb_geometry",
-            columns: "county, mun_cty_co, SUM(crashes)::INTEGER crashes",
             filter: whereClause,
         });
-        var query = urls.emphasisAreaMvtURL + table + searchParams.toString();
+        var query = urls.emphasisAreaMvtCountyURL + table + searchParams.toString();
         return {
             'tileEndpoint': query,
             'sourceLayer': `${base}_crashes_cty`
@@ -217,14 +196,28 @@ define([
         var whereClause = CreateWhereClause(filterParameters, "wkb_geometry", "muni");
         var searchParams = new URLSearchParams({
             geom_column: "wkb_geometry",
-            columns: "mun, mun_mu, county, mun_cty_co, SUM(crashes)::INTEGER crashes",
             filter: whereClause,
         });
-        var query = urls.emphasisAreaMvtURL + table + searchParams.toString();
+        var query = urls.emphasisAreaMvtMuniURL + table + searchParams.toString();
         return {
             'tileEndpoint': query,
             'sourceLayer': `${base}_crashes_muni`
         }
+    }
+
+    function GetClusterHeatmapQuery(filterParameters) {
+        var base = getTable(filterParameters);
+        var table = base + "_crashes/{z}/{x}/{y}?";
+        var whereClause = CreateWhereClause(filterParameters, "geom");
+        var searchParams = new URLSearchParams({
+            geom_column: "geom",
+            filter: whereClause,
+        });
+        var query = urls.emphasisAreaMvtClusterURL + table + searchParams.toString();
+        return {
+            tileEndpoint: query,
+            sourceLayer: `${base}_crashes`
+        };
     }
 
     function GetSriQuery(filterParameters) {
@@ -265,6 +258,7 @@ define([
         GetCrashesQuery: GetCrashesQuery,
         GetCountyHeatmapQuery: GetCountyHeatmapQuery,
         GetMuniHeatmapQuery: GetMuniHeatmapQuery,
+        GetClusterHeatmapQuery: GetClusterHeatmapQuery,
         GetPersonsQuery: GetPersonsQuery,
         GetSriQuery: GetSriQuery,
         GetAccidentsBySriQuery: GetAccidentsBySriQuery

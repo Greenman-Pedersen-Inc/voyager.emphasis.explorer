@@ -80,7 +80,7 @@ define([
 
         function refreshHandler() {
             if (map.sriClusters.disabled) {
-                map.crashClusters.update(parent.filterParameters);
+                // map.crashClusters.update(parent.filterParameters);
             }
 
             map.legend.update();
@@ -91,10 +91,10 @@ define([
             if (filterParameters.summary.value === 'nj-summary') {
                 map.countyHeatmap.disabled = false;
                 map.municipalHeatmap.disabled = false;
-                map.crashClusters.disabled = false;
+                // map.crashClusters.disabled = false;
                 map.sriClusters.disabled = true;
                 map.mapFilter.update(filterParameters, layerChanged);
-                map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
+                // map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
 
                 map.setFilter('county_outline_layer', null);
                 map.setFilter('municipality_outline_layer', null);
@@ -108,10 +108,10 @@ define([
             } else if (filterParameters.summary.value === 'loc-summary') {
                 map.countyHeatmap.disabled = false;
                 map.municipalHeatmap.disabled = false;
-                map.crashClusters.disabled = false;
+                // map.crashClusters.disabled = false;
                 map.sriClusters.disabled = true;
                 map.mapFilter.update(filterParameters, layerChanged);
-                map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
+                // map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
 
                 if (filterParameters.locationFilters.mun_mu.value && filterParameters.locationFilters.mun_cty_co.value) {
                     map.setFilter('county_outline_layer', ['==', 'mun_cty_co', filterParameters.locationFilters.mun_cty_co.value]);
@@ -208,10 +208,10 @@ define([
             } else if (filterParameters.summary.value === 'mpo-summary') {
                 map.countyHeatmap.disabled = false;
                 map.municipalHeatmap.disabled = false;
-                map.crashClusters.disabled = false;
+                // map.crashClusters.disabled = false;
                 map.sriClusters.disabled = true;
                 map.mapFilter.update(filterParameters, layerChanged);
-                map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
+                // map.crashClusters.update(filterParameters); // function added by the crash cluster widget to force update.
 
                 if (filterParameters.locationFilters.mun_cty_co.value) {
                     let countyList = filterParameters.locationFilters.mun_cty_co.value
@@ -250,7 +250,7 @@ define([
             } else if (filterParameters.summary.value === 'sri-summary') {
                 map.countyHeatmap.disabled = true;
                 map.municipalHeatmap.disabled = true;
-                map.crashClusters.disabled = true;
+                // map.crashClusters.disabled = true;
 
                 map.setFilter('county_outline_layer', null);
                 map.setFilter('municipality_outline_layer', null);
@@ -271,9 +271,9 @@ define([
             map.sources = new MapSources(map);
             map.mapFilter = new MapFilter(map);
             map.jurisdictionBoundaries = new JurisdictionBoundaries(map);
-            map.countyHeatmap = new CountyHeatmap(map, 'county_heatmap', 'county_heatmap_layer', 'county_outline_layer')
             map.municipalHeatmap = new MunicipalHeatmap(map, 'muni_heatmap', 'muni_heatmap_layer', 'municipality_outline_layer')
-            map.crashClusters = new CrashClusters(map, 'ard_accidents');
+            map.countyHeatmap = new CountyHeatmap(map, 'county_heatmap', 'county_heatmap_layer', 'county_outline_layer')
+            map.crashClusters = new CrashClusters(map, 'ard_accidents', credentials.token);
             map.sriClusters = new SRIClusters(map, 'sri');
             map.overlayData = new OverlayData(map);
             map.addControl(geocoder, 'top-left');
@@ -281,8 +281,8 @@ define([
             map.addControl(new mapboxgl.NavigationControl());
             map.addControl(new mapboxgl.GeolocateControl());
             map.forceUpdate = function() {
-                countyHeatmap.update();
-                municipalHeatmap.update();
+                map.countyHeatmap.update();
+                map.municipalHeatmap.update();
             }
             map.goTo = function(features) {
                 if (features.length > 0) {
@@ -339,7 +339,7 @@ define([
                 map.jurisdictionBoundaries.addToMap();
                 map.countyHeatmap.addToMap();
                 map.municipalHeatmap.addToMap();
-                map.crashClusters.addToMap();
+                // map.crashClusters.addToMap();
                 map.sriClusters.addToMap();
                 map.overlayData.addToMap();
                 refreshHandler();

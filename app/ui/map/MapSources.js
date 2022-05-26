@@ -39,18 +39,20 @@ define([
 
     return function MapSources(map) {
         const map_default = 7;
-        const county_heatmap_zoomThreshold = 8.5;
-        const muni_heatmap_zoomThreshold = 12.5;
+        const county_heatmap_zoomThreshold = 10;
+        const muni_heatmap_zoomThreshold = 13;
         const layerDefinitions = {
             "county_heatmap": {
                 type: 'vector',
                 layers: [{
                     id: "county_heatmap_layer",
                     label: 'Crashes by County',
+                    minzoom: 0,
                     maxzoom: county_heatmap_zoomThreshold,
                     type: 'fill',
                     source: "county_heatmap",
-                    'source-layer': 'emphasis_areas_2021.ped_bike_crashes_cty',
+                    'source-layer': 'emphasis_areas_2021.lane_departure_crashes_cty',
+                    'source-tiles': api.getCountyHeatmapQuery,
                     beforeLayer: "muni_heatmap_layer",
                     paintAttributes: {
                         //'fill-opacity': .8
@@ -96,8 +98,9 @@ define([
                     maxzoom: muni_heatmap_zoomThreshold,
                     type: 'fill',
                     source: "muni_heatmap",
-                    'source-layer': 'emphasis_areas_2021.ped_bike_crashes_muni',
-                    beforeLayer: 'clusters',
+                    'source-layer': 'emphasis_areas_2021.lane_departure_crashes_muni',
+                    'source-tiles': api.getMuniHeatmapQuery,
+                    // beforeLayer: 'clusters',
                     paintAttributes: {
                         //'fill-opacity': .8
                         'fill-opacity': [
@@ -138,7 +141,9 @@ define([
                 id: 'clusters',
                 label: 'Crash Clusters',
                 type: 'geojson',
-                sourceName: 'ard_accidents',
+                'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                'source-tiles': api.GetClusterHeatmapQuery,
+                source: 'ard_accidents',
                 cluster: true,
                 clusterRadius: 80, // Radius of each cluster when clustering points (defaults to 50)
                 explanation: {
@@ -153,6 +158,8 @@ define([
                         minzoom: muni_heatmap_zoomThreshold,
                         type: 'circle',
                         source: 'ard_accidents',
+                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-tiles': api.GetClusterHeatmapQuery,
                         filter: ['has', 'point_count'],
                         paint: {
                             'circle-radius': 15,
@@ -190,6 +197,8 @@ define([
                         label: 'Cluster Count',
                         type: 'symbol',
                         source: 'ard_accidents',
+                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
                         filter: ['has', 'point_count'],
                         layout: {
@@ -204,6 +213,8 @@ define([
                         label: 'Single Crashes',
                         type: 'circle',
                         source: 'ard_accidents',
+                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
                         filter: ['!', ['has', 'point_count']],
                         paint: {
@@ -229,6 +240,8 @@ define([
                         label: 'Cluster Count',
                         type: 'symbol',
                         source: 'ard_accidents',
+                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
                         filter: ['!', ['has', 'point_count']],
                         layout: {
@@ -1115,5 +1128,10 @@ define([
 
             return layerData;
         }
+
+        this.getLayerGroupData = function (sourceString) {
+            return layerDefinitions[sourceString];
+        };
+    
     }
 });

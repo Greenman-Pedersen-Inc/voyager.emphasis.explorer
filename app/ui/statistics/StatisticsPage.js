@@ -6,24 +6,24 @@ define([
     "./app/ui/statistics/CountyBodiesChart.js",
     "./app/ui/statistics/CrashTypeChart.js",
     "./app/ui/statistics/RelatedBehaviorChart.js",
-    "./app/ui/statistics/RollingAverageChart.js",
     "./app/ui/statistics/RoadUsers/RoadUsersBreakdownChart.js",
-    "./app/ui/statistics/RoadUsers/RollingAverageChart.js",
     "./app/ui/statistics/DriverBehavior/DriverBehaviorBreakdownChart.js",
-    "./app/ui/statistics/DriverBehavior/RollingAverageChart.js",
+    //"./app/ui/statistics/RollingAverageChart.js",
+    //"./app/ui/statistics/RoadUsers/RollingAverageChart.js",
+    //"./app/ui/statistics/DriverBehavior/RollingAverageChart.js",
 ], function(
     urls,
     Utilities,
     AnnualBodiesChart,
-    RollingAverageChart,
     AgeBucketsChart,
     CountyBodiesChart,
     RelatedBehaviorChart,
     CrashTypeChart,
     RoadUsersBreakdownChart,
-    RoadUsersRollingAverageChart,
     DriverBehaviorBreakdownChart,
-    DriverBehaviorRollingAverageChart,
+    //RollingAverageChart,
+    //RoadUsersRollingAverageChart,
+    //DriverBehaviorRollingAverageChart,
 ) {
     return function StatisticsPage(credentials) {
         const self = this;
@@ -36,7 +36,7 @@ define([
 
         // Generic EA charts
         this.annualBodiesChart = new AnnualBodiesChart();
-        this.rollingAverageChart = new RollingAverageChart();
+        //this.rollingAverageChart = new RollingAverageChart();
         this.ageBucketsChart = new AgeBucketsChart();
         this.countyBodiesChart = new CountyBodiesChart();
         this.relatedBehaviorChart = new RelatedBehaviorChart();
@@ -44,11 +44,11 @@ define([
 
         // Road Users charts
         this.roadUsersBreakdownChart = new RoadUsersBreakdownChart();
-        this.roadUsersRollingAverageChart = new RoadUsersRollingAverageChart();
+        //this.roadUsersRollingAverageChart = new RoadUsersRollingAverageChart();
 
         // Driver Behavior charts
         this.driverBehaviorBreakdownChart = new DriverBehaviorBreakdownChart();
-        this.driverBehaviorRollingAverageChart = new DriverBehaviorRollingAverageChart();
+        // this.driverBehaviorRollingAverageChart = new DriverBehaviorRollingAverageChart();
 
         function UpdateCharts(filterParameters) {
             let chartLoadingElements = document.getElementsByClassName("loading chart");
@@ -82,7 +82,7 @@ define([
                                 if (filterParameters.category.value === 'road_users') {
                                     Promise.all([
                                         self.roadUsersBreakdownChart.update(chartData, filterParameters),
-                                        self.roadUsersRollingAverageChart.update(chartData, filterParameters),
+                                        // self.roadUsersRollingAverageChart.update(chartData, filterParameters),
                                     ]).then(() => {
                                         document.querySelectorAll('#filterAccordion .card').forEach(element => {
                                             element.classList.remove('paused');
@@ -91,7 +91,7 @@ define([
                                 } else if (filterParameters.category.value === 'driver_behavior') {
                                     Promise.all([
                                         self.driverBehaviorBreakdownChart.update(chartData, filterParameters),
-                                        self.driverBehaviorRollingAverageChart.update(chartData, filterParameters),
+                                        // self.driverBehaviorRollingAverageChart.update(chartData, filterParameters),
                                     ]).then(() => {
                                         document.querySelectorAll('#filterAccordion .card').forEach(element => {
                                             element.classList.remove('paused');
@@ -101,7 +101,7 @@ define([
                                     Promise.all([
                                         self.annualBodiesChart.update(chartData, filterParameters),
                                         self.crashTypeChart.update(chartData, filterParameters),
-                                        self.rollingAverageChart.update(chartData, filterParameters),
+                                        // self.rollingAverageChart.update(chartData, filterParameters),
                                         self.ageBucketsChart.update(chartData, filterParameters),
                                         self.countyBodiesChart.update(chartData, filterParameters),
                                         self.relatedBehaviorChart.update(chartData, filterParameters),
@@ -123,17 +123,17 @@ define([
             var category = filterParameters.category.value;
             if (category === 'lane_departure' || category === 'intersection' || category === 'ped_cyclist') {
                 self.annualBodiesChart.updateChartTitle(filterParameters);
-                self.rollingAverageChart.updateChartTitle(filterParameters);
+                // self.rollingAverageChart.updateChartTitle(filterParameters);
                 self.ageBucketsChart.updateChartTitle(filterParameters);
                 self.countyBodiesChart.updateChartTitle(filterParameters);
                 self.relatedBehaviorChart.updateChartTitle(filterParameters);
                 self.crashTypeChart.updateChartTitle(filterParameters);
             } else if (category === 'road_users') {
                 self.roadUsersBreakdownChart.updateChartTitle(filterParameters);
-                self.roadUsersRollingAverageChart.updateChartTitle(filterParameters);
+                // self.roadUsersRollingAverageChart.updateChartTitle(filterParameters);
             } else if (category === 'driver_behavior') {
                 self.driverBehaviorBreakdownChart.updateChartTitle(filterParameters);
-                self.driverBehaviorRollingAverageChart.updateChartTitle(filterParameters);
+                // self.driverBehaviorRollingAverageChart.updateChartTitle(filterParameters);
             }
         }
 
@@ -154,17 +154,17 @@ define([
             var category = filterParameters.category.value;
             if (category === 'lane_departure' || category === 'intersection' || category === 'ped_cyclist') {
                 self.annualBodiesChart.chart.chart._windowResize();
-                self.rollingAverageChart.chart.chart._windowResize();
+                // self.rollingAverageChart.chart.chart._windowResize();
                 self.ageBucketsChart.chart.chart._windowResize();
                 self.countyBodiesChart.chart.chart._windowResize();
                 self.relatedBehaviorChart.chart.chart._windowResize();
                 self.crashTypeChart.chart.chart._windowResize();
             } else if (category === 'road_users') {
                 self.roadUsersBreakdownChart.chart.chart._windowResize();
-                self.roadUsersRollingAverageChart.chart.chart._windowResize();
+                // self.roadUsersRollingAverageChart.chart.chart._windowResize();
             } else if (category === 'driver_behavior') {
                 self.driverBehaviorBreakdownChart.chart.chart._windowResize();
-                self.driverBehaviorRollingAverageChart.chart.chart._windowResize();
+                // self.driverBehaviorRollingAverageChart.chart.chart._windowResize();
             }
         }
     }
