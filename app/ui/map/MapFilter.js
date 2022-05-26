@@ -22,21 +22,26 @@ define([
 
                 setLayerSource('county_heatmap_layer', 'county_heatmap', tableBase + '_crashes_cty');
                 setLayerSource('muni_heatmap_layer', 'muni_heatmap', tableBase + '_crashes_muni');
+                setLayerSource('clusters', 'ard_accidents', tableBase + '_crashes');
             }
 
             var countyHeatMapQuery = api.GetCountyHeatmapQuery(filterParameters);
             var muniHeatMapQuery = api.GetMuniHeatmapQuery(filterParameters);
+            var clustersHeatMapQuery = api.GetClusterHeatmapQuery(filterParameters);
 
             // Set the tile url to a cache-busting url (to circumvent browser caching behaviour):
             self.map.getSource('county_heatmap').tiles = [countyHeatMapQuery.tileEndpoint + `&dt=${Date.now()}`];
             self.map.getSource('muni_heatmap').tiles = [muniHeatMapQuery.tileEndpoint + `&dt=${Date.now()}`];
+            self.map.getSource('ard_accidents').tiles = [clustersHeatMapQuery.tileEndpoint + `&dt=${Date.now()}`];
 
             // Remove the tiles for a particular source
             self.map.style._sourceCaches['other:county_heatmap'].clearTiles();
             self.map.style._sourceCaches['other:muni_heatmap'].clearTiles();
+            self.map.style._sourceCaches['other:ard_accidents'].clearTiles();
             // Load the new tiles for the current viewport (map.transform -> viewport)
             self.map.style._sourceCaches['other:county_heatmap'].update(map.transform);
             self.map.style._sourceCaches['other:muni_heatmap'].update(map.transform);
+            self.map.style._sourceCaches['other:ard_accidents'].update(map.transform);
 
             // Force a repaint, so that the map will be repainted without you having to touch the map
             self.map.triggerRepaint();

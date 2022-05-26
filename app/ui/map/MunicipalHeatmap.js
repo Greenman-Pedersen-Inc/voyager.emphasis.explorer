@@ -179,12 +179,14 @@ define([
 
         layerDefinition['source-layer'] = heatMapQuery.sourceLayer;
 
-        map.addSource(layerDefinition.source, {
-            type: 'vector',
-            tiles: [heatMapQuery.tileEndpoint],
-            attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
-        });
-        map.addLayer(layerDefinition, beforeLayer);
+        // map.addSource(layerDefinition.source, {
+        //     type: 'vector',
+        //     tiles: [heatMapQuery.tileEndpoint],
+        //     attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
+        // });
+        // map.addLayer(layerDefinition, beforeLayer);
+
+        self.addToMap();
         map.on('sourcedata', initializeLayer);
 
         if (layerDefinition.mouseleave) {

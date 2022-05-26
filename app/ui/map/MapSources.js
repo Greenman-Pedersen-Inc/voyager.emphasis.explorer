@@ -140,7 +140,7 @@ define([
             "ard_accidents": {
                 id: 'clusters',
                 label: 'Crash Clusters',
-                type: 'geojson',
+                type: 'vector',
                 'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
                 'source-tiles': api.GetClusterHeatmapQuery,
                 source: 'ard_accidents',
@@ -158,9 +158,9 @@ define([
                         minzoom: muni_heatmap_zoomThreshold,
                         type: 'circle',
                         source: 'ard_accidents',
-                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-layer': 'ard_accidents',
                         'source-tiles': api.GetClusterHeatmapQuery,
-                        filter: ['has', 'point_count'],
+                        filter: ['has', 'crash_count'],
                         paint: {
                             'circle-radius': 15,
                             'circle-stroke-width': 2,
@@ -197,13 +197,13 @@ define([
                         label: 'Cluster Count',
                         type: 'symbol',
                         source: 'ard_accidents',
-                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-layer': 'ard_accidents',
                         'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
-                        filter: ['has', 'point_count'],
+                        filter: ['has', 'crash_count'],
                         layout: {
                             'visibility': 'visible',
-                            'text-field': '{point_count_abbreviated}',
+                            'text-field': '{crash_count}',
                             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                             'text-size': 12,
                         },
@@ -213,10 +213,10 @@ define([
                         label: 'Single Crashes',
                         type: 'circle',
                         source: 'ard_accidents',
-                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-layer': 'ard_accidents',
                         'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
-                        filter: ['!', ['has', 'point_count']],
+                        filter: ['!', ['has', 'crash_count']],
                         paint: {
                             'circle-color': '#a1dbb2',
                             'circle-radius': 15,
@@ -226,7 +226,7 @@ define([
                         layout: {
                             'visibility': 'visible'
                         },
-                        beforeLayer: 'uncluster-count',
+                        // beforeLayer: 'uncluster-count',
                         click: function(feature) {
                             return getFeatureDetails([feature.properties.crashid], map.filterParameters).then(detailedFeatureArray => {
                                 return {
@@ -240,10 +240,10 @@ define([
                         label: 'Cluster Count',
                         type: 'symbol',
                         source: 'ard_accidents',
-                        'source-layer': 'emphasis_areas_2021.lane_departure_crashes',
+                        'source-layer': 'ard_accidents',
                         'source-tiles': api.GetClusterHeatmapQuery,
                         minzoom: muni_heatmap_zoomThreshold,
-                        filter: ['!', ['has', 'point_count']],
+                        filter: ['!', ['has', 'crash_count']],
                         layout: {
                             'visibility': 'visible',
                             'text-field': '1',
@@ -257,9 +257,9 @@ define([
                     loading: 'clusters-legend-loading',
                     colorArray: ['#a1dbb2', '#fee5ad', '#faca66', '#f7a541', '#f45d4c'],
                     'circle-color': ['interpolate', ['linear'],
-                        ['get', 'point_count']
+                        ['get', 'crash_count']
                     ],
-                    countAttribute: 'point_count',
+                    countAttribute: 'crash_count',
                     layer: 'clusters',
                     type: 'circle'
                 }

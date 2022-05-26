@@ -10,7 +10,7 @@ define(['./app/Utilities.js'], function(Utilities) {
                         min: 0
                     };
                 }
-                const values = someArrayOfObjects.map(item => item['properties']['crashes'] || item['properties']['point_count'] || 1);
+                const values = someArrayOfObjects.map(item => item['properties']['crashes'] || item['properties']['crash_count'] || 1);
 
                 return {
                     max: Math.max.apply(null, values),
