@@ -5,6 +5,40 @@ define([
     urls, 
     emphasisAreaSelections
 ){
+    function postData(credentials, url = '', data = {}) {
+        return fetch(url, {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                credentials: JSON.stringify(credentials),
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify(data) // body data type must match "Content-Type" header
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    return response.json().then((data) => {
+                        return data;
+                    });
+                } else {
+                    return Promise.resolve({
+                        features: [],
+                        type: 'FeatureCollection'
+                    });
+                }
+            })
+            .then((features) => {
+                return features;
+            })
+            .catch(errorHandler);
+        
+    }
+
     function CreateWhereClause(filterParameters, geomColumn, type = null) {
         var queryStringArray = [];
 
@@ -49,30 +83,6 @@ define([
 
     function CreateDetailWhereClause(filterParameters, geomColumn) {
         var queryStringArray = [];
-
-        // if (filterParameters.summary.value !== "nj-summary") {
-        //     if (type == "muni" || type == "county") {
-        //         if (filterParameters.locationFilters.mun_cty_co.value) {
-        //             if (filterParameters.locationFilters.mun_cty_co.value.includes(",")) {
-        //                 var strArray = [];
-        //                 var splitString = filterParameters.locationFilters.mun_cty_co.value.split(",");
-        //                 splitString.forEach(element => {
-        //                     strArray.push("'" + element + "'");
-        //                 });
-        //                 queryStringArray.push("mun_cty_co IN (" + strArray.join(",") + ")");
-        //             } else {
-        //                 queryStringArray.push("mun_cty_co = '" + filterParameters.locationFilters.mun_cty_co.value + "'");
-        //             }
-        //         }
-        //         if (filterParameters.locationFilters.mun_mu.value) {
-        //             queryStringArray.push("mun_mu = '" + filterParameters.locationFilters.mun_mu.value + "'");
-        //         }
-        //     } else if (type == "sri") {
-        //         queryStringArray.push("calc_sri = '" + filterParameters.locationFilters.sri.value + "'");
-        //         //joinedString += " GROUP BY calc_sri, calc_milepost, " + geomColumn;
-        //     }
-        // }
-
 
         if (filterParameters.summary.value !== "nj-summary") {
             if (filterParameters.summary.value == 'loc-summary' || filterParameters.summary.value == 'mpo-summary') {
@@ -159,6 +169,16 @@ define([
         return returnTable;
     }
 
+    function GetCrash(credentials, crashArray) {
+        return postData(credentials, urls.crashURL, { crash_array: crashArray }).then(function (response) {
+            if (response.tokenError) {
+                console.error(response);
+            } else {
+                return response;
+            }
+        });
+    }
+
     function GetCrashesQuery(filterParameters, bounds) {
         var table = getTable(filterParameters) + "_crashes";
         var whereClause = CreateWhereClause(filterParameters, "geom");
@@ -242,15 +262,24 @@ define([
         }
         var table = getTable(filterParameters, type);
         table = table + "_" + type;
-        // var whereClause = "crashid IN (" + "'" + crashIds.join("','") + "'" + ")";
-        // var searchParams = new URLSearchParams({
-        //     filter: whereClause,
-        //     columns: "*",
-        // });
-        // var query = urls.emphasisAreaCrashIDQueryURL + table + "?" + searchParams.toString();
-        // console.log(query);
-
         return urls.emphasisAreaCrashIDQueryURL + table
+    }
+
+    function errorHandler(error) {
+        console.error(error);
+        if (error.httpCode === 498 || error.details.error.details.httpStatus === 498) {
+            var redirectDialog = new Dialog({
+                title: "Credentials Timed Out",
+                content: "Your session has expired. In order to continue using Safety Voyager you must sign in again. Closing this dialog will redirect to the login where you will be able to sign in again.",
+                style: "width: 400px",
+                closable: true,
+                onHide: function() {
+                    redirectDialog.destroy();
+                    window.location = 'index.html';
+                }
+            });
+            redirectDialog.show();
+        }
     }
 
     return {
@@ -261,6 +290,7 @@ define([
         GetClusterHeatmapQuery: GetClusterHeatmapQuery,
         GetPersonsQuery: GetPersonsQuery,
         GetSriQuery: GetSriQuery,
-        GetAccidentsBySriQuery: GetAccidentsBySriQuery
+        GetAccidentsBySriQuery: GetAccidentsBySriQuery,
+        GetCrash: GetCrash
     }
 });

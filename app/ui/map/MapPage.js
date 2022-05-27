@@ -268,7 +268,7 @@ define([
             map.initialBounds = map.getBounds();
             map.filterParameters = parent.filterParameters;
             map.legend = new Legend(map);
-            map.sources = new MapSources(map);
+            map.sources = new MapSources(map, credentials);
             map.mapFilter = new MapFilter(map);
             map.jurisdictionBoundaries = new JurisdictionBoundaries(map);
             map.municipalHeatmap = new MunicipalHeatmap(map, 'muni_heatmap', 'muni_heatmap_layer', 'municipality_outline_layer')

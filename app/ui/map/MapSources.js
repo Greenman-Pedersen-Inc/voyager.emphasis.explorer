@@ -37,7 +37,7 @@ define([
         }
     }
 
-    return function MapSources(map) {
+    return function MapSources(map, credentials) {
         const map_default = 7;
         const county_heatmap_zoomThreshold = 10;
         const muni_heatmap_zoomThreshold = 13;
@@ -170,26 +170,38 @@ define([
                             'visibility': 'visible'
                         },
                         beforeLayer: 'cluster-count',
-                        click: function(feature, coordinates) {
-                            const clusterSource = map.getSource('ard_accidents');
+                        click: function(feature, e) {
+                            const crashArray = feature.properties.crash_array;
+                            const crashDataPromise = api.GetCrash(credentials, crashArray);
+                            crashDataPromise
+                            .then(data => {
+                                console.log(data);
+                                const crashDetails = new CrashDetails(map, data, credentials);
+                                new mapboxgl.Popup()
+                                    .setLngLat(feature.geometry.coordinates)
+                                    .setDOMContent(crashDetails.domNode)
+                                    .addTo(map);
+                            })
+
+                            // // const clusterSource = map.getSource('ard_accidents');
 
 
-                            function getClusterLeavesPromise(sourceID, clusterID, limit, offset) {
-                                return new Promise((resolve, reject) => {
-                                    map.getSource(sourceID).getClusterLeaves(clusterID, limit, offset, (err, features) => {
-                                        if (err) reject(err);
-                                        else resolve(features);
-                                    });
-                                });
-                            };
+                            // function getClusterLeavesPromise(sourceID, clusterID, limit, offset) {
+                            //     return new Promise((resolve, reject) => {
+                            //         map.getSource(sourceID).getClusterLeaves(clusterID, limit, offset, (err, features) => {
+                            //             if (err) reject(err);
+                            //             else resolve(features);
+                            //         });
+                            //     });
+                            // };
 
-                            return getClusterLeavesPromise('ard_accidents', feature.id, feature.properties.point_count, 0).then(function(clusterFeatures) {
-                                return getFeatureDetails(clusterFeatures.map(feature => feature.properties.crashid), map.filterParameters).then(detailedFeatureArray => {
-                                    return {
-                                        content: new CrashDetails(map, detailedFeatureArray).domNode
-                                    }
-                                })
-                            });
+                            // return getClusterLeavesPromise('ard_accidents', feature.id, feature.properties.point_count, 0).then(function(clusterFeatures) {
+                            //     return getFeatureDetails(clusterFeatures.map(feature => feature.properties.crashid), map.filterParameters).then(detailedFeatureArray => {
+                            //         return {
+                            //             content: new CrashDetails(map, detailedFeatureArray).domNode
+                            //         }
+                            //     })
+                            // });
                         }
                     },
                     {

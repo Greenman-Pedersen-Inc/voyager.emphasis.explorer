@@ -29,9 +29,6 @@ define([
 
     function PoliceFormButton(feature, filterParameters, credentials) {
         const self = this;
-        const requestParams = {
-            dlnNum: feature.dln,
-        }
 
         this.domNode = document.createElement('a');
         this.domNode.id = 'policeFormButton';
@@ -45,37 +42,43 @@ define([
             placement: 'right'
         });
 
-        const reportUrlParams = Object.keys(requestParams).map(key => key + '=' + requestParams[key]).join('&');
-        const headers = {
-            headers: {
-                token: credentials.token
+        if (feature.hasOwnProperty('dln')) {
+            const requestParams = {
+                dlnNum: feature.dln,
             }
+    
+            const reportUrlParams = Object.keys(requestParams).map(key => key + '=' + requestParams[key]).join('&');
+            const headers = {
+                headers: {
+                    token: credentials.token
+                }
+            }
+            fetch(urls.crashRecordURL + reportUrlParams, headers)
+                .then(response => {
+                    if (response.status === 200) {
+                        response.json()
+                            .then(data => {
+                                if (data.url !== "") {
+                                    self.domNode.href = data.url;
+                                    self.domNode.target = "_blank";
+                                    self.domNode.classList.remove('disabled');
+                                    self.tippyInstance.disable();
+                                }
+                                else {
+                                    policeFormButton.button.classList.add('disabled');
+                                    policeFormButton.button.href = '';
+                                    tippyInstance.enable();
+                                }
+                            })
+                    }
+                    else {
+                        self.domNode.classList.add('disabled');
+                        self.domNode.href = '';
+                        self.tippyInstance.enable();
+                    }
+                })
+                .catch(Utilities.errorHandler);
         }
-        fetch(urls.crashRecordURL + reportUrlParams, headers)
-            .then(response => {
-                if (response.status === 200) {
-                    response.json()
-                        .then(data => {
-                            if (data.url !== "") {
-                                self.domNode.href = data.url;
-                                self.domNode.target = "_blank";
-                                self.domNode.classList.remove('disabled');
-                                self.tippyInstance.disable();
-                            }
-                            else {
-                                policeFormButton.button.classList.add('disabled');
-                                policeFormButton.button.href = '';
-                                tippyInstance.enable();
-                            }
-                        })
-                }
-                else {
-                    self.domNode.classList.add('disabled');
-                    self.domNode.href = '';
-                    self.tippyInstance.enable();
-                }
-            })
-            .catch(Utilities.errorHandler);
     }
 
     function FeatureGrid(feature) {
@@ -253,6 +256,24 @@ define([
         if (self.features.length === 1) {
             leftButton.classList.add('disabled');
             rightButton.classList.add('disabled');
+        }
+    }
+
+    function errorHandler(error) {
+        console.error(error);
+        if (error.httpCode === 498 || error.details.error.details.httpStatus === 498) {
+            var redirectDialog = new Dialog({
+                title: 'Credentials Timed Out',
+                content:
+                    'Your session has expired. In order to continue using Safety Voyager you must sign in again. Closing this dialog will redirect to the login where you will be able to sign in again.',
+                style: "width: 400px;  font-size: 14px; font-family: 'Avenir Next W00','Helvetica Neue',Helvetica,Arial,sans-serif;",
+                closable: true,
+                onHide: function () {
+                    redirectDialog.destroy();
+                    window.location = loginURL;
+                }
+            });
+            redirectDialog.show();
         }
     }
 })

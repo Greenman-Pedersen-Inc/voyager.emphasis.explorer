@@ -80,7 +80,7 @@ define([
 
     return function CrashClusters(map, sourceID) {
         const self = this;
-        const mapSources = new MapSources(map, map.filterParameters);
+        const mapSources = new MapSources(map);
         const layerDefinition = mapSources.getLayerDefinition(sourceID);
 
         Object.defineProperty(this, 'disabled', {
