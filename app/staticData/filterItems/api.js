@@ -39,7 +39,7 @@ define([
         
     }
 
-    function CreateWhereClause(filterParameters, geomColumn, type = null) {
+    function CreateWhereClause(filterParameters, geomColumn, type = null, includeMuni = true) {
         var queryStringArray = [];
 
         if (filterParameters.summary.value !== "nj-summary") {
@@ -51,13 +51,13 @@ define([
                         splitString.forEach(element => {
                             strArray.push("'" + element + "'");
                         });
-                        queryStringArray.push("mun_cty_co IN (" + strArray.join(",") + ")");
+                        queryStringArray.push("crash_data.mun_cty_co IN (" + strArray.join(",") + ")");
                     } else {
-                        queryStringArray.push("mun_cty_co = '" + filterParameters.locationFilters.mun_cty_co.value + "'");
+                        queryStringArray.push("crash_data.mun_cty_co = '" + filterParameters.locationFilters.mun_cty_co.value + "'");
                     }
                 }
-                if (filterParameters.locationFilters.mun_mu.value) {
-                    queryStringArray.push("mun_mu = '" + filterParameters.locationFilters.mun_mu.value + "'");
+                if (filterParameters.locationFilters.mun_mu.value && includeMuni) {
+                    queryStringArray.push("crash_data.mun_mu = '" + filterParameters.locationFilters.mun_mu.value + "'");
                 }
             } else if (filterParameters.summary.value == 'sri-summary' && filterParameters.locationFilters.sri.value) {
                 queryStringArray.push("calc_sri = '" + filterParameters.locationFilters.sri.value + "'");
@@ -198,7 +198,7 @@ define([
     function GetCountyHeatmapQuery(filterParameters) {
         var base = getTable(filterParameters);
         var table = base + "_crashes_cty/{z}/{x}/{y}?";
-        var whereClause = CreateWhereClause(filterParameters, "wkb_geometry", "county");
+        var whereClause = CreateWhereClause(filterParameters, "wkb_geometry", "county", false);
         var searchParams = new URLSearchParams({
             geom_column: "wkb_geometry",
             filter: whereClause,

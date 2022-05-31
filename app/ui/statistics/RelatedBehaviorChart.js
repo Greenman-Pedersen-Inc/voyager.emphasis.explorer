@@ -94,6 +94,11 @@ define(
                     png: {
                         filename: fileName,
                     }
+                },
+                noData: {
+                    text: "No data to display",
+                    align: 'center',
+                    verticalAlign: 'middle',
                 }
             }
         }

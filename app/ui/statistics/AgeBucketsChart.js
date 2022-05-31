@@ -24,13 +24,19 @@ define(
         
                 chartContainer.classList.remove('hidden');
                 chartLoading.classList.add('hidden');
+
+                if (chartData) {
+                    var formattedData = formatData(chartData, filterParameters.category.value);
         
-                var formattedData = formatData(chartData, filterParameters.category.value);
-        
-                if (self.chart) {
-                    self.chart.update(formattedData);
-                } else {
-                    self.chart = new ColumnChart(formattedData, chart);
+                    if (self.chart) {
+                        self.chart.update(formattedData);
+                    } else {
+                        self.chart = new ColumnChart(formattedData, chart);
+                    }
+                }
+
+                else {
+                    self.chart.update({});
                 }
             }
         }
@@ -149,6 +155,11 @@ define(
                     png: {
                         filename: fileName,
                     }
+                },
+                noData: {
+                    text: "No data to display",
+                    align: 'center',
+                    verticalAlign: 'middle',
                 }
             }
         }
