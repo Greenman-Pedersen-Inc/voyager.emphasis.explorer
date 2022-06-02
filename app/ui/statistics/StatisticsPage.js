@@ -1,17 +1,17 @@
 define([
-    "./app/staticData/urls.js",
-    "./app/Utilities.js",
-    "./app/ui/statistics/AgeBucketsChart.js",
-    "./app/ui/statistics/AnnualBodiesChart.js",
-    "./app/ui/statistics/CountyBodiesChart.js",
-    "./app/ui/statistics/CrashTypeChart.js",
-    "./app/ui/statistics/RelatedBehaviorChart.js",
-    "./app/ui/statistics/RoadUsers/RoadUsersBreakdownChart.js",
-    "./app/ui/statistics/DriverBehavior/DriverBehaviorBreakdownChart.js",
-    "./app/ui/statistics/RollingAverageChart.js",
-    "./app/ui/statistics/RoadUsers/RollingAverageChart.js",
-    "./app/ui/statistics/DriverBehavior/RollingAverageChart.js",
-], function(
+    './app/staticData/urls.js',
+    './app/Utilities.js',
+    './app/ui/statistics/AgeBucketsChart.js',
+    './app/ui/statistics/AnnualBodiesChart.js',
+    './app/ui/statistics/CountyBodiesChart.js',
+    './app/ui/statistics/CrashTypeChart.js',
+    './app/ui/statistics/RelatedBehaviorChart.js',
+    './app/ui/statistics/RoadUsers/RoadUsersBreakdownChart.js',
+    './app/ui/statistics/DriverBehavior/DriverBehaviorBreakdownChart.js',
+    './app/ui/statistics/RollingAverageChart.js',
+    './app/ui/statistics/RoadUsers/RollingAverageChart.js',
+    './app/ui/statistics/DriverBehavior/RollingAverageChart.js',
+], function (
     urls,
     Utilities,
     AnnualBodiesChart,
@@ -23,16 +23,16 @@ define([
     DriverBehaviorBreakdownChart,
     RollingAverageChart,
     RoadUsersRollingAverageChart,
-    DriverBehaviorRollingAverageChart,
+    DriverBehaviorRollingAverageChart
 ) {
     return function StatisticsPage(credentials) {
         const self = this;
         this.requestUrl = urls.emphasisAreaStatistics;
         const headers = {
             headers: {
-                token: credentials.token
-            }
-        }
+                token: credentials.token,
+            },
+        };
 
         // Generic EA charts
         this.annualBodiesChart = new AnnualBodiesChart();
@@ -51,72 +51,70 @@ define([
         this.driverBehaviorRollingAverageChart = new DriverBehaviorRollingAverageChart();
 
         function UpdateCharts(filterParameters) {
-            let chartLoadingElements = document.getElementsByClassName("loading chart");
+            let chartLoadingElements = document.getElementsByClassName('loading chart');
             for (i = 0; i < chartLoadingElements.length; i++) {
                 chartLoadingElements[i].classList.remove('hidden');
             }
 
             if (filterParameters.category.value === 'road_users') {
-                $("#generalEmphasisAreaChartsContainer").addClass("hidden");
-                $("#driverBehaviorChartsContainer").addClass("hidden");
-                $("#roadUsersChartsContainer").removeClass("hidden");
+                $('#generalEmphasisAreaChartsContainer').addClass('hidden');
+                $('#driverBehaviorChartsContainer').addClass('hidden');
+                $('#roadUsersChartsContainer').removeClass('hidden');
             } else if (filterParameters.category.value === 'driver_behavior') {
-                $("#generalEmphasisAreaChartsContainer").addClass("hidden");
-                $("#roadUsersChartsContainer").addClass("hidden");
-                $("#driverBehaviorChartsContainer").removeClass("hidden");
+                $('#generalEmphasisAreaChartsContainer').addClass('hidden');
+                $('#roadUsersChartsContainer').addClass('hidden');
+                $('#driverBehaviorChartsContainer').removeClass('hidden');
             } else {
-                $("#generalEmphasisAreaChartsContainer").removeClass("hidden");
-                $("#driverBehaviorChartsContainer").addClass("hidden");
-                $("#roadUsersChartsContainer").addClass("hidden");
+                $('#generalEmphasisAreaChartsContainer').removeClass('hidden');
+                $('#driverBehaviorChartsContainer').addClass('hidden');
+                $('#roadUsersChartsContainer').addClass('hidden');
             }
 
             // make fetch request to get all chart data
             var requestParams = filterParameters.createPayloadRequest();
             var searchParams = new URLSearchParams(requestParams);
-            fetch(self.requestUrl + searchParams.toString(), headers)
-                .then((response) => {
-                    if (response.status === 200) {
-                        response.json()
-                            .then((data) => {
-                                const chartData = data[requestParams.category];
-                                if (filterParameters.category.value === 'road_users') {
-                                    Promise.all([
-                                        self.roadUsersBreakdownChart.update(chartData, filterParameters),
-                                        self.roadUsersRollingAverageChart.update(chartData, filterParameters),
-                                    ]).then(() => {
-                                        document.querySelectorAll('#filterAccordion .card').forEach(element => {
-                                            element.classList.remove('paused');
-                                        });
-                                    });
-                                } else if (filterParameters.category.value === 'driver_behavior') {
-                                    Promise.all([
-                                        self.driverBehaviorBreakdownChart.update(chartData, filterParameters),
-                                        self.driverBehaviorRollingAverageChart.update(chartData, filterParameters),
-                                    ]).then(() => {
-                                        document.querySelectorAll('#filterAccordion .card').forEach(element => {
-                                            element.classList.remove('paused');
-                                        });
-                                    });
-                                } else {
-                                    Promise.all([
-                                        self.annualBodiesChart.update(chartData, filterParameters),
-                                        self.crashTypeChart.update(chartData, filterParameters),
-                                        self.rollingAverageChart.update(chartData, filterParameters),
-                                        self.ageBucketsChart.update(chartData, filterParameters),
-                                        self.countyBodiesChart.update(chartData, filterParameters),
-                                        self.relatedBehaviorChart.update(chartData, filterParameters),
-                                    ]).then(() => {
-                                        document.querySelectorAll('#filterAccordion .card').forEach(element => {
-                                            element.classList.remove('paused');
-                                        });
-                                    });
-                                }
+            fetch(self.requestUrl + searchParams.toString(), headers).then((response) => {
+                if (response.status === 200) {
+                    response.json().then((data) => {
+                        let chartData = [];
+                        if (data !== undefined) chartData = data[requestParams.category];
+                        if (filterParameters.category.value === 'road_users') {
+                            Promise.all([
+                                self.roadUsersBreakdownChart.update(chartData, filterParameters),
+                                self.roadUsersRollingAverageChart.update(chartData, filterParameters),
+                            ]).then(() => {
+                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                                    element.classList.remove('paused');
+                                });
                             });
-                    }
-                    else {
-                        Utilities.errorHandler(response.error, response.message);
-                    }
-                });
+                        } else if (filterParameters.category.value === 'driver_behavior') {
+                            Promise.all([
+                                self.driverBehaviorBreakdownChart.update(chartData, filterParameters),
+                                self.driverBehaviorRollingAverageChart.update(chartData, filterParameters),
+                            ]).then(() => {
+                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                                    element.classList.remove('paused');
+                                });
+                            });
+                        } else {
+                            Promise.all([
+                                self.annualBodiesChart.update(chartData, filterParameters),
+                                self.crashTypeChart.update(chartData, filterParameters),
+                                self.rollingAverageChart.update(chartData, filterParameters),
+                                self.ageBucketsChart.update(chartData, filterParameters),
+                                self.countyBodiesChart.update(chartData, filterParameters),
+                                self.relatedBehaviorChart.update(chartData, filterParameters),
+                            ]).then(() => {
+                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                                    element.classList.remove('paused');
+                                });
+                            });
+                        }
+                    });
+                } else {
+                    Utilities.errorHandler(response.error, response.message);
+                }
+            });
         }
 
         function UpdateChartTitles(filterParameters) {
@@ -137,20 +135,20 @@ define([
             }
         }
 
-        this.initialize = function(filterParameters) {
+        this.initialize = function (filterParameters) {
             UpdateCharts(filterParameters);
             UpdateChartTitles(filterParameters);
-        }
+        };
 
-        this.update = function(filterParameters) {
-            document.querySelectorAll('#filterAccordion .card').forEach(element => {
+        this.update = function (filterParameters) {
+            document.querySelectorAll('#filterAccordion .card').forEach((element) => {
                 element.classList.add('paused');
             });
             UpdateCharts(filterParameters);
             UpdateChartTitles(filterParameters);
-        }
+        };
 
-        this.resize = function(filterParameters) {
+        this.resize = function (filterParameters) {
             var category = filterParameters.category.value;
             if (category === 'lane_departure' || category === 'intersection' || category === 'ped_cyclist') {
                 self.annualBodiesChart.chart.chart._windowResize();
@@ -166,6 +164,6 @@ define([
                 self.driverBehaviorBreakdownChart.chart.chart._windowResize();
                 self.driverBehaviorRollingAverageChart.chart.chart._windowResize();
             }
-        }
-    }
+        };
+    };
 });

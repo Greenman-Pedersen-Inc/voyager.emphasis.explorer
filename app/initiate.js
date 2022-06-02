@@ -1,18 +1,18 @@
 define([
     './js/widgets/UserInfo.js',
-    "./app/components/filterMenu/headers.js",
-    "./app/components/filterMenu/generateReportButton.js",
-    "./app/components/filterMenu/tooltips.js",
-    "./app/components/filterMenu/queryString.js",
-    "./app/components/filterMenu/tour.js",
-    "./app/ui/data/DataPage.js",
-    "./app/ui/filterMenu/RadioHeaders.js",
-    "./app/ui/filterMenu/LocationFilters.js",
-    "./app/ui/filterMenu/TemporalFilters.js",
-    "./app/ui/map/MapPage.js",
-    "./app/ui/statistics/StatisticsPage.js",
-    "./app/variables/filterParameters.js",
-], function(
+    './app/components/filterMenu/headers.js',
+    './app/components/filterMenu/generateReportButton.js',
+    './app/components/filterMenu/tooltips.js',
+    './app/components/filterMenu/queryString.js',
+    './app/components/filterMenu/tour.js',
+    './app/ui/data/DataPage.js',
+    './app/ui/filterMenu/RadioHeaders.js',
+    './app/ui/filterMenu/LocationFilters.js',
+    './app/ui/filterMenu/TemporalFilters.js',
+    './app/ui/map/MapPage.js',
+    './app/ui/statistics/StatisticsPage.js',
+    './app/variables/filterParameters.js',
+], function (
     UserInfo,
     Headers,
     ReportButton,
@@ -27,14 +27,13 @@ define([
     StatisticsPage,
     FilterParameters
 ) {
-
     function initiatePage(userInfo) {
         const self = this;
 
         this.filterParameters = new FilterParameters('lane_departure', 'Lane Departure');
 
         var mapPage = new MapPage(this, userInfo.credentials);
-        var dataPage = new DataPage(this.filterParameters);
+        var dataPage = new DataPage(this.filterParameters, userInfo.credentials);
         var statisticPage = new StatisticsPage(userInfo.credentials);
 
         var headers = new Headers();
@@ -59,22 +58,22 @@ define([
         reportButton.initiate(this.filterParameters, tourHelper);
         queryString.updateQueryString(this.filterParameters);
 
-        document.querySelectorAll('.display-toggle').forEach(function(element) {
-            element.addEventListener('click', function(event) {
-                document.querySelectorAll('.display-toggle').forEach(function(toggle) {
+        document.querySelectorAll('.display-toggle').forEach(function (element) {
+            element.addEventListener('click', function (event) {
+                document.querySelectorAll('.display-toggle').forEach(function (toggle) {
                     toggle.classList.remove('active');
-                })
+                });
 
-                document.querySelectorAll('.content-section').forEach(function(section) {
+                document.querySelectorAll('.content-section').forEach(function (section) {
                     section.classList.add('hidden');
                     section.classList.remove('active-tab');
-                })
+                });
 
                 this.classList.add('active');
                 document.querySelector(`#${this.getAttribute('data-target')}`).classList.remove('hidden');
                 document.querySelector(`#${this.getAttribute('data-target')}`).classList.add('active-tab');
 
-                if (this.id == "DataPill") {
+                if (this.id == 'DataPill') {
                     dataPage.resize();
                 } else if (this.id === 'StatisticsPill') {
                     statisticPage.resize(self.filterParameters);
@@ -85,8 +84,7 @@ define([
         });
     }
 
-
     return {
-        initiatePage: initiatePage
+        initiatePage: initiatePage,
     };
 });

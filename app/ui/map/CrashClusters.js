@@ -1,8 +1,4 @@
-define([
-    './app/Utilities.js',
-    "./app/ui/map/MapSources.js",
-    "./app/staticData/filterItems/api.js"
-], function(
+define(['./app/Utilities.js', './app/ui/map/MapSources.js', './app/staticData/filterItems/api.js'], function (
     Utilities,
     MapSources,
     api
@@ -19,14 +15,14 @@ define([
         const maximumValue = Math.max(...visualizationValues);
         const parts = 5;
         const bucketSize = (maximumValue - minimumValue) / parts;
-    
+
         if (visualizationValues) {
             if (visualizationValues.length > 5) {
                 colorArray.forEach((color, index) => {
                     colorRange.push({
                         from: Math.floor(minimumValue + bucketSize * index),
                         to: Math.floor(minimumValue - (index < 4 ? 1 : 0) + bucketSize * (index + 1)),
-                        color: color
+                        color: color,
                     });
                 });
             } else if (visualizationValues.length > 0) {
@@ -34,10 +30,10 @@ define([
                     colorRange.push({
                         from: value,
                         to: value,
-                        color: colorArray.pop()
+                        color: colorArray.pop(),
                     });
                 });
-    
+
                 // mapbox styles require the values to be ascending
                 colorRange.sort((a, b) => a.from - b.from);
             } else {
@@ -46,10 +42,10 @@ define([
         } else {
             return colorRange;
         }
-    
+
         return colorRange;
     }
-    
+
     function updateHeatmapPaint(map, legendScheme, attributes) {
         function createHeatmapScheme(legendScheme) {
             var colorFill = JSON.parse(JSON.stringify(attributes.legend[attributes.legend.type + '-color']));
@@ -72,34 +68,37 @@ define([
         }
     }
 
-    return function CrashClusters(map, sourceID, beforeLayer) {
+    return function CrashClusters(map, sourceID) {
         const self = this;
         const mapSources = new MapSources(map, map.filterParameters);
         const layerDefinition = mapSources.getLayerDefinition(sourceID);
-        const layerGroup = mapSources.getLayerGroupData("ard_accidents");
+        const layerGroup = mapSources.getLayerGroupData('ard_accidents');
         const heatMapQuery = api.GetClusterHeatmapQuery(map.filterParameters);
 
         Object.defineProperty(this, 'disabled', {
-            get: function() {
+            get: function () {
                 return this['_disabled'];
             },
-            set: function(value) {
+            set: function (value) {
                 this['_disabled'] = value;
 
                 map.getLayer(layerDefinition.id).disabled = value;
 
-
                 if (value) {
-                    map.getLayer(layerDefinition.id).visibility = 'none';
+                    layerGroup.layers.forEach((layer) => {
+                        map.getLayer(layer.id).visibility = 'none';
+                    });
                 } else {
-                    map.getLayer(layerDefinition.id).visibility = 'visible';
+                    layerGroup.layers.forEach((layer) => {
+                        map.getLayer(layer.id).visibility = 'visible';
+                    });
                 }
             },
-            enumerable: false
+            enumerable: false,
         });
 
         this.sourceLayer = layerDefinition.sourceLayer;
-        this.update = function(source) {
+        this.update = function (source) {
             if (self.legendCard && map.getLayer(layerDefinition.id).visible) {
                 self.legendCard.loadingIndicator.classList.remove('hidden');
             }
@@ -119,18 +118,18 @@ define([
                     self.legendCard.update(map.filterParameters, features, 'visible', true, true, true);
                 }
             }
-        }
-        this.addToMap = function() {
+        };
+        this.addToMap = function () {
             map.addSource(layerDefinition.source, {
                 type: 'vector',
                 tiles: [heatMapQuery.tileEndpoint],
-                attribution: 'New Jersey Department of Treasury NJTR-1 Reports'
+                attribution: 'New Jersey Department of Treasury NJTR-1 Reports',
             });
 
-            layerGroup.layers.forEach(function (layer) {    
+            layerGroup.layers.forEach(function (layer) {
                 map.addLayer(layer);
                 // map.on('sourcedata', self.updateSource);
-    
+
                 if (layer.mouseleave) {
                     map.on('mouseleave', layer.id, layer.mouseleave);
                 } else {
@@ -152,28 +151,28 @@ define([
                 },
                 set: function (value) {
                     this['_visible'] = value;
-    
+
                     layerGroup.layers.forEach(function (layer) {
                         map.setLayoutProperty(layer.id, 'visibility', value);
                     });
-    
+
                     if (value === 'none') {
                         map.off('sourcedata', self.updateSource);
                     } else {
                         map.on('sourcedata', self.updateSource);
                     }
                 },
-                enumerable: false
+                enumerable: false,
             });
-    
+
             self.disabled = false;
-        }
+        };
 
         function initializeLayer(response) {
             if (self['disabled']) return;
             if (map.getSource(layerDefinition.source) && map.isSourceLoaded(layerDefinition.source)) {
                 let features = map.querySourceFeatures(layerDefinition.source, {
-                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer
+                    sourceLayer: map.getLayer(layerDefinition.id).sourceLayer,
                 });
 
                 self.legendCard = map.legend.addLayer(layerDefinition, features, 'visible', true, true, true);
@@ -196,16 +195,16 @@ define([
         if (layerDefinition.mouseleave) {
             map.on('mouseleave', layerDefinition.id, layerDefinition.mouseleave);
         } else {
-            map.on('mouseenter', layerDefinition.id, function() {
+            map.on('mouseenter', layerDefinition.id, function () {
                 map.getCanvas().style.cursor = 'pointer';
             });
         }
         if (layerDefinition.mouseenter) {
             map.on('mouseenter', layerDefinition.id, layerDefinition.mouseenter);
         } else {
-            map.on('mouseleave', layerDefinition.id, function() {
+            map.on('mouseleave', layerDefinition.id, function () {
                 map.getCanvas().style.cursor = '';
             });
         }
-    }
+    };
 });

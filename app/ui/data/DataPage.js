@@ -1,11 +1,5 @@
-define([
-    "./app/ui/data/DataGrid.js",
-    "./app/ui/data/SRITable.js",
-], function(
-    DataGrid,
-    SRITable,
-) {
-    return function DataPage(initialFilterParameters) {
+define(['./app/ui/data/DataGrid.js', './app/ui/data/SRITable.js'], function (DataGrid, SRITable) {
+    return function DataPage(initialFilterParameters, credentials) {
         const self = this;
 
         const crashColumns = [
@@ -24,72 +18,98 @@ define([
             { id: 'ped_injured', name: 'Ped. Inj.', hidden: true },
         ];
         const occupantColumns = [
-            { id: "acc_case", name: "Case Number", hidden: false },
-            { id: "veh_id", name: "Vehicle ID", hidden: true },
-            { id: "id", name: "Person ID", hidden: false },
-            { id: "position_in_code", name: "Person Type", hidden: true },
-            { id: "severity_rating", name: "Severity", hidden: false },
-            { id: "crash_type", name: "Crash Type", hidden: false },
-            { id: "year", name: "Year", hidden: false },
-            { id: "mun_cty_co", name: "County", hidden: false },
-            { id: "mun_mu", name: "Muni.", hidden: false },
-            { id: "calc_sri", name: "SRI", hidden: false },
-            { id: "calc_milepost", name: "Milepost", hidden: false },
-            { id: "calc_latitude", name: "Latitude", hidden: true },
-            { id: "calc_longitude", name: "Longitude", hidden: true },
-            { id: "posted_speed", name: "Posted Speed", hidden: true },
-            { id: "age", name: "Age", hidden: true },
-            { id: "sex", name: "Sex", hidden: true },
-            { id: "flg_cell_in_use", name: "Cellphone Used?", hidden: true },
-            { id: "hit_run", name: "Hit/Run?", hidden: true },
-            { id: "unlicensed", name: "Unlicensed?", hidden: true },
-            { id: "intersection", name: "At Intersection", hidden: true },
-            { id: "light_cond_code", name: "Light Condition", hidden: true },
-            { id: "surf_cond_code", name: "Surface Condition", hidden: true },
+            { id: 'acc_case', name: 'Case Number', hidden: false },
+            { id: 'veh_id', name: 'Vehicle ID', hidden: true },
+            { id: 'id', name: 'Person ID', hidden: false },
+            { id: 'position_in_code', name: 'Person Type', hidden: true },
+            { id: 'severity_rating', name: 'Severity', hidden: false },
+            { id: 'crash_type', name: 'Crash Type', hidden: false },
+            { id: 'year', name: 'Year', hidden: false },
+            { id: 'mun_cty_co', name: 'County', hidden: false },
+            { id: 'mun_mu', name: 'Muni.', hidden: false },
+            { id: 'calc_sri', name: 'SRI', hidden: false },
+            { id: 'calc_milepost', name: 'Milepost', hidden: false },
+            { id: 'calc_latitude', name: 'Latitude', hidden: true },
+            { id: 'calc_longitude', name: 'Longitude', hidden: true },
+            { id: 'posted_speed', name: 'Posted Speed', hidden: true },
+            { id: 'age', name: 'Age', hidden: true },
+            { id: 'sex', name: 'Sex', hidden: true },
+            { id: 'flg_cell_in_use', name: 'Cellphone Used?', hidden: true },
+            { id: 'hit_run', name: 'Hit/Run?', hidden: true },
+            { id: 'unlicensed', name: 'Unlicensed?', hidden: true },
+            { id: 'intersection', name: 'At Intersection', hidden: true },
+            { id: 'light_cond_code', name: 'Light Condition', hidden: true },
+            { id: 'surf_cond_code', name: 'Surface Condition', hidden: true },
         ];
         const pedestrianColumns = [
-            { id: "acc_case", name: "Case Number", hidden: false },
-            { id: "id", name: "Person ID", hidden: true },
-            { id: "severity_rating", name: "Severity", hidden: false },
-            { id: "crash_type", name: "Crash Type", hidden: false },
-            { id: "year", name: "Year", hidden: false },
-            { id: "mun_cty_co", name: "County", hidden: false },
-            { id: "mun_mu", name: "Muni.", hidden: false },
-            { id: "calc_sri", name: "SRI", hidden: false },
-            { id: "calc_milepost", name: "Milepost", hidden: false },
-            { id: "calc_latitude", name: "Latitude", hidden: true },
-            { id: "calc_longitude", name: "Longitude", hidden: true },
-            { id: "posted_speed", name: "Posted Speed", hidden: true },
-            { id: "age", name: "Age", hidden: true },
-            { id: "sex", name: "Sex", hidden: true },
-            { id: "flg_cell_in_use", name: "Cellphone Used?", hidden: true },
-            { id: "hit_run", name: "Hit/Run?", hidden: true },
-            { id: "intersection", name: "At Intersection", hidden: true },
-            { id: "light_cond_code", name: "Light Condition", hidden: true },
-            { id: "surf_cond_code", name: "Surface Condition", hidden: true },
-            { id: "road_sys_code", name: "Road System", hidden: true },
+            { id: 'acc_case', name: 'Case Number', hidden: false },
+            { id: 'id', name: 'Person ID', hidden: true },
+            { id: 'severity_rating', name: 'Severity', hidden: false },
+            { id: 'crash_type', name: 'Crash Type', hidden: false },
+            { id: 'year', name: 'Year', hidden: false },
+            { id: 'mun_cty_co', name: 'County', hidden: false },
+            { id: 'mun_mu', name: 'Muni.', hidden: false },
+            { id: 'calc_sri', name: 'SRI', hidden: false },
+            { id: 'calc_milepost', name: 'Milepost', hidden: false },
+            { id: 'calc_latitude', name: 'Latitude', hidden: true },
+            { id: 'calc_longitude', name: 'Longitude', hidden: true },
+            { id: 'posted_speed', name: 'Posted Speed', hidden: true },
+            { id: 'age', name: 'Age', hidden: true },
+            { id: 'sex', name: 'Sex', hidden: true },
+            { id: 'flg_cell_in_use', name: 'Cellphone Used?', hidden: true },
+            { id: 'hit_run', name: 'Hit/Run?', hidden: true },
+            { id: 'intersection', name: 'At Intersection', hidden: true },
+            { id: 'light_cond_code', name: 'Light Condition', hidden: true },
+            { id: 'surf_cond_code', name: 'Surface Condition', hidden: true },
+            { id: 'road_sys_code', name: 'Road System', hidden: true },
         ];
 
-        this.crashTable = new DataGrid(initialFilterParameters, crashColumns, 'crashTable', 'crashTableTitle', 'crashColumnList', '_crashes', 'Crashes Selected');
-        this.occupantTable = new DataGrid(initialFilterParameters, occupantColumns, 'occupantTable', 'occupantTableTitle', 'occupantColumnList', '_occupants', 'Occupants Involved in Crashes');
-        this.pedestrianTable = new DataGrid(initialFilterParameters, pedestrianColumns, 'pedestrianTable', 'pedestrianTableTitle', 'pedestrianColumnList', '_pedestrians', 'Pedestrians Involved in Crashes');
+        this.crashTable = new DataGrid(
+            initialFilterParameters,
+            crashColumns,
+            'crashTable',
+            'crashTableTitle',
+            'crashColumnList',
+            '_crashes',
+            'Crashes Selected',
+            credentials
+        );
+        this.occupantTable = new DataGrid(
+            initialFilterParameters,
+            occupantColumns,
+            'occupantTable',
+            'occupantTableTitle',
+            'occupantColumnList',
+            '_occupants',
+            'Occupants Involved in Crashes',
+            credentials
+        );
+        this.pedestrianTable = new DataGrid(
+            initialFilterParameters,
+            pedestrianColumns,
+            'pedestrianTable',
+            'pedestrianTableTitle',
+            'pedestrianColumnList',
+            '_pedestrians',
+            'Pedestrians Involved in Crashes',
+            credentials
+        );
         // this.sriTable = new SRITable();
 
-        this.resize = function() {
+        this.resize = function () {
             self.crashTable.resize();
             self.occupantTable.resize();
             self.pedestrianTable.resize();
-        }
+        };
 
-        this.update = function(filterParameters) {
-            if (filterParameters.category.value == "ped_cyclist") {
-                self.occupantTable.update(filterParameters, true);      // empty table because there are no stats for occupants in ped/bike category
-            } 
-            else {
+        this.update = function (filterParameters) {
+            if (filterParameters.category.value == 'ped_cyclist') {
+                self.occupantTable.update(filterParameters, true); // empty table because there are no stats for occupants in ped/bike category
+            } else {
                 self.occupantTable.update(filterParameters);
             }
             self.crashTable.update(filterParameters);
             self.pedestrianTable.update(filterParameters);
-        }
-    }
-})
+        };
+    };
+});
