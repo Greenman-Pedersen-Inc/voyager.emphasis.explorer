@@ -31,7 +31,7 @@ define(function () {
                 },
                 colors: data['colors'],
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

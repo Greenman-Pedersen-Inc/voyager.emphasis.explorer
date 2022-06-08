@@ -20,7 +20,7 @@ define(function () {
                 colors: ['#f45d4c', '#f7a541', '#faca66', '#fee5ad', '#a1dbb2'],
                 series: yAxisSeries,
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 },

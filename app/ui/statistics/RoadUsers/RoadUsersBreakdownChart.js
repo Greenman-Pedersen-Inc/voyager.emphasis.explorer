@@ -1,20 +1,15 @@
 define(
     [
         './app/Utilities.js',
-        "./app/staticData/urls.js",
         "./app/components/statistics/BarNegativeChart.js",
-        "esri/request",
     ],
     function(
         Utilities,
-        urls,
-        BarNegativeChart,
-        esriRequest
+        BarNegativeChart
     ) {
 
         return function RoadUsersBreakdownChart() {
             const self = this;
-            const dataAttribute = 'road_users';
             const chart = document.getElementById('RoadUsersBreakDownChart');
             const chartContainer = document.getElementById('RoadUsersBreakDownChartContainer');
             const chartLoading = document.getElementById('RoadUsersBreakDownChartLoading');
@@ -23,22 +18,43 @@ define(
             this.updateChartTitle = function() {
                 chartTitle.innerHTML = "Road Users Breakdown";
             }
-            this.update = function (statisticsData, filterParameters) {
-                chartLoading.classList.remove('hidden');
-                chartContainer.classList.remove('hidden');
-        
-                const chartData = statisticsData[filterParameters.subCategory.value];
-                
-                chartContainer.classList.remove('hidden');
-                chartLoading.classList.add('hidden');
-        
-                var formattedData = formatData(chartData, filterParameters);
-        
+
+            this.clearChart = function() {
+                var series = [
+                    { name: 'Fatality', data: [] },
+                    { name: 'Serious Injury', data: [] }
+                ];
                 if (self.chart) {
-                    self.chart.update(formattedData);
-                } else {
-                    self.chart = new BarNegativeChart(formattedData, chart);
+                    self.chart.chart.updateSeries(series);
                 }
+            }
+
+            this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
+                chartContainer.classList.remove('hidden');
+                chartLoading.classList.remove('hidden');
+                self.clearChart();
+                let searchParams = new URLSearchParams(requestParams);
+
+                fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                    if (response.status === 200) {
+                        response.json().then((data) => {
+                            let chartData = [];
+                            if (data !== undefined) chartData = data[requestParams.category][requestParams.subCategory];
+
+                            chartContainer.classList.remove('hidden');
+                            chartLoading.classList.add('hidden');
+                    
+                            let formattedData = formatData(chartData, filterParameters);
+                            if (self.chart) {
+                                self.chart.update(formattedData);
+                            } else {
+                                self.chart = new BarNegativeChart(formattedData, chart);
+                            }
+                        });
+                    } else {
+                        Utilities.errorHandler(response.error, response.message);
+                    }
+                });
             }
         }
 
@@ -134,7 +150,7 @@ define(
                     }
                 },
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

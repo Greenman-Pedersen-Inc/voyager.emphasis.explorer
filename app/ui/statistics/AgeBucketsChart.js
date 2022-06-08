@@ -1,9 +1,11 @@
 define(
     [
         "./app/components/statistics/ColumnChart.js",
+        './app/Utilities.js'
     ],
     function(
         ColumnChart,
+        Utilities
     ) {
         return function AgeBucketChart() {
             const self = this;
@@ -16,28 +18,44 @@ define(
             this.updateChartTitle = function (filterParameters) {
                 chartTitle.innerHTML = "Total Persons Count by Age and Gender - " + filterParameters.category.label;
             }
-            this.update = function (statisticsData, filterParameters) {
+            this.clearChart = function() {
+                var series = [
+                    { name: 'Female SI', data: [] },
+                    { name: 'Female Fatality', data: [] },
+                    { name: 'Male SI', data: [] },
+                    { name: 'Male Fatality', data: [] },
+                ];
+                if (self.chart) {
+                    self.chart.chart.updateSeries(series);
+                }
+            }
+            this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
-        
-                var chartData = statisticsData[dataAttribute];
-        
-                chartContainer.classList.remove('hidden');
-                chartLoading.classList.add('hidden');
+                self.clearChart();
+                requestParams["chartType"] = dataAttribute;
+                let searchParams = new URLSearchParams(requestParams);
 
-                if (chartData) {
-                    var formattedData = formatData(chartData, filterParameters.category.value);
-        
-                    if (self.chart) {
-                        self.chart.update(formattedData);
+                fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                    if (response.status === 200) {
+                        response.json().then((data) => {
+                            let chartData = [];
+                            if (data !== undefined) chartData = data[requestParams.category][dataAttribute];
+
+                            chartContainer.classList.remove('hidden');
+                            chartLoading.classList.add('hidden');
+                    
+                            let formattedData = formatData(chartData, filterParameters.category.value);
+                            if (self.chart) {
+                                self.chart.update(formattedData);
+                            } else {
+                                self.chart = new ColumnChart(formattedData, chart);
+                            }
+                        });
                     } else {
-                        self.chart = new ColumnChart(formattedData, chart);
+                        Utilities.errorHandler(response.error, response.message);
                     }
-                }
-
-                else {
-                    self.chart.update({});
-                }
+                });
             }
         }
 
@@ -157,7 +175,7 @@ define(
                     }
                 },
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

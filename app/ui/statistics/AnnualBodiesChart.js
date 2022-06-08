@@ -1,9 +1,11 @@
 define(
     [
         "./app/components/statistics/MixedBarLineChart.js",
+        './app/Utilities.js',
     ],
     function(
         MixedBarLineChart,
+        Utilities
     ) {
         return function AnnualBodiesChart() {
             const self = this;
@@ -17,21 +19,43 @@ define(
                 chartTitle.innerHTML = "Annual Fatalities and Serious Injuries - " + filterParameters.category.label;
             }
 
-            this.update = function (statisticsData, filterParameters) {
+            this.clearChart = function() {
+                var series = [
+                    { name: 'Serious Injury', type: 'column', data: []},
+                    { name: 'Fatality', type: 'line', data: []}
+                ];
+                if (self.chart) {
+                    self.chart.chart.updateSeries(series);
+                }
+            }
+
+            this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
+                self.clearChart();
+                requestParams["chartType"] = dataAttribute;
+                let searchParams = new URLSearchParams(requestParams);
         
-                var chartData = statisticsData[dataAttribute];
-        
-                chartContainer.classList.remove('hidden');
-                chartLoading.classList.add('hidden');
-        
-                var formattedData = formatData(chartData, filterParameters.category.value);
-                if (self.chart) {
-                    self.chart.update(formattedData);
-                } else {
-                    self.chart = new MixedBarLineChart(formattedData, chart);
-                }
+                fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                    if (response.status === 200) {
+                        response.json().then((data) => {
+                            let chartData = [];
+                            if (data !== undefined) chartData = data[requestParams.category][dataAttribute];
+
+                            chartContainer.classList.remove('hidden');
+                            chartLoading.classList.add('hidden');
+                    
+                            let formattedData = formatData(chartData, filterParameters.category.value);
+                            if (self.chart) {
+                                self.chart.update(formattedData);
+                            } else {
+                                self.chart = new MixedBarLineChart(formattedData, chart);
+                            }
+                        });
+                    } else {
+                        Utilities.errorHandler(response.error, response.message);
+                    }
+                });
             }
         }
 
@@ -39,13 +63,13 @@ define(
             // labels: years
             // y-axis titles: serious injury, fatality
             // series: Serious_Injury(bar), Fatal(line)
-            var fileName = 'Annual_Bodies_' + categoryLabel;
-            var labels = [];
-            var dataHolder = {
+            let fileName = 'Annual_Bodies_' + categoryLabel;
+            let labels = [];
+            let dataHolder = {
                 'Serious_Injury': [],
                 'Fatal': []
             }
-            var yaxis = [{
+            let yaxis = [{
                     title: {
                         text: 'Serious Injury',
                     },
@@ -74,7 +98,7 @@ define(
                 dataHolder['Fatal'].push(element['Fatal']);
             });
 
-            var series = [
+            let series = [
                 { name: 'Serious Injury', type: 'column', data: Object.values(dataHolder['Serious_Injury']) },
                 { name: 'Fatality', type: 'line', data: Object.values(dataHolder['Fatal']) }
             ];
@@ -106,7 +130,7 @@ define(
                     }
                 },
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }
