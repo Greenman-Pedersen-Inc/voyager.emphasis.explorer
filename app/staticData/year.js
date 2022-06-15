@@ -1,19 +1,23 @@
-define(function() {
-    const startYear = 2016;
+define(function () {
+    const startYear = 2019;
     var d = new Date();
     const endYear = d.getFullYear() - 1;
-    const defaultStartYear = endYear - 4; // both the start and end year are inclusive
+    const defaultStartYear = endYear - 2; // both the start and end year are inclusive
 
-    function getDefaultStartYear() { return defaultStartYear; }
+    function getDefaultStartYear() {
+        return defaultStartYear;
+    }
 
-    function getDefaultEndYear() { return endYear; }
+    function getDefaultEndYear() {
+        return endYear;
+    }
 
     function getAllYears() {
         var list = [];
         for (var i = startYear; i <= endYear; i++) {
             list.push({
                 label: i,
-                value: i
+                value: i,
             });
         }
         return list;
@@ -24,7 +28,7 @@ define(function() {
         for (var i = startingYear; i <= endYear; i++) {
             list.push({
                 label: i,
-                value: i
+                value: i,
             });
         }
         return list;
@@ -35,7 +39,7 @@ define(function() {
         for (var i = startYear; i <= endingYear; i++) {
             list.push({
                 label: i,
-                value: i
+                value: i,
             });
         }
         return list;
@@ -56,7 +60,7 @@ define(function() {
                 for (var j = startingYear; j <= endingYear; j++) {
                     list.push({
                         label: j,
-                        value: j
+                        value: j,
                     });
                 }
             }
@@ -64,8 +68,8 @@ define(function() {
         }
     }
 
-    function concatYearRange(yearString, seperator = "-") {
-        var yearArray = yearString.split(",");
+    function concatYearRange(yearString, seperator = '-') {
+        var yearArray = yearString.split(',');
         if (yearArray.length === 0) {
             return null;
         } else if (yearArray.length === 1) {
@@ -82,6 +86,6 @@ define(function() {
         getYearsBetween: getYearsBetween,
         concatYearRange: concatYearRange,
         getYearsAfter: getYearsAfter,
-        getDefaultEndYear: getDefaultEndYear
+        getDefaultEndYear: getDefaultEndYear,
     };
 });
