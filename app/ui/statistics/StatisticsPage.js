@@ -1,14 +1,14 @@
 define([
     './app/staticData/urls.js',
     './app/Utilities.js',
-    './app/ui/statistics/AgeBucketsChart.js',
     './app/ui/statistics/AnnualBodiesChart.js',
+    './app/ui/statistics/AgeBucketsChart.js',
     './app/ui/statistics/CountyBodiesChart.js',
     './app/ui/statistics/CrashTypeChart.js',
+    './app/ui/statistics/RollingAverageChart.js',
     './app/ui/statistics/RelatedBehaviorChart.js',
     './app/ui/statistics/RoadUsers/RoadUsersBreakdownChart.js',
     './app/ui/statistics/DriverBehavior/DriverBehaviorBreakdownChart.js',
-    './app/ui/statistics/RollingAverageChart.js',
     './app/ui/statistics/RoadUsers/RollingAverageChart.js',
     './app/ui/statistics/DriverBehavior/RollingAverageChart.js',
 ], function (
@@ -19,9 +19,9 @@ define([
     CountyBodiesChart,
     RelatedBehaviorChart,
     CrashTypeChart,
+    RollingAverageChart,
     RoadUsersBreakdownChart,
     DriverBehaviorBreakdownChart,
-    RollingAverageChart,
     RoadUsersRollingAverageChart,
     DriverBehaviorRollingAverageChart
 ) {
@@ -70,51 +70,40 @@ define([
                 $('#roadUsersChartsContainer').addClass('hidden');
             }
 
-            // make fetch request to get all chart data
-            var requestParams = filterParameters.createPayloadRequest();
-            var searchParams = new URLSearchParams(requestParams);
-            fetch(self.requestUrl + searchParams.toString(), headers).then((response) => {
-                if (response.status === 200) {
-                    response.json().then((data) => {
-                        let chartData = [];
-                        if (data !== undefined) chartData = data[requestParams.category];
-                        if (filterParameters.category.value === 'road_users') {
-                            Promise.all([
-                                self.roadUsersBreakdownChart.update(chartData, filterParameters),
-                                self.roadUsersRollingAverageChart.update(chartData, filterParameters),
-                            ]).then(() => {
-                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
-                                    element.classList.remove('paused');
-                                });
-                            });
-                        } else if (filterParameters.category.value === 'driver_behavior') {
-                            Promise.all([
-                                self.driverBehaviorBreakdownChart.update(chartData, filterParameters),
-                                self.driverBehaviorRollingAverageChart.update(chartData, filterParameters),
-                            ]).then(() => {
-                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
-                                    element.classList.remove('paused');
-                                });
-                            });
-                        } else {
-                            Promise.all([
-                                self.annualBodiesChart.update(chartData, filterParameters),
-                                self.crashTypeChart.update(chartData, filterParameters),
-                                self.rollingAverageChart.update(chartData, filterParameters),
-                                self.ageBucketsChart.update(chartData, filterParameters),
-                                self.countyBodiesChart.update(chartData, filterParameters),
-                                self.relatedBehaviorChart.update(chartData, filterParameters),
-                            ]).then(() => {
-                                document.querySelectorAll('#filterAccordion .card').forEach((element) => {
-                                    element.classList.remove('paused');
-                                });
-                            });
-                        }
+            let requestParams = filterParameters.createPayloadRequest();
+
+            if (filterParameters.category.value === 'road_users') {
+                Promise.all([
+                    self.roadUsersBreakdownChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.roadUsersRollingAverageChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                ]).then(() => {
+                    document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                        element.classList.remove('paused');
                     });
-                } else {
-                    Utilities.errorHandler(response.error, response.message);
-                }
-            });
+                });
+            } else if (filterParameters.category.value === 'driver_behavior') {
+                Promise.all([
+                    self.driverBehaviorBreakdownChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.driverBehaviorRollingAverageChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                ]).then(() => {
+                    document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                        element.classList.remove('paused');
+                    });
+                });
+            } else {
+                Promise.all([
+                    self.annualBodiesChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.crashTypeChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.rollingAverageChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.ageBucketsChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.countyBodiesChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                    self.relatedBehaviorChart.update(requestParams, filterParameters, self.requestUrl, headers),
+                ]).then(() => {
+                    document.querySelectorAll('#filterAccordion .card').forEach((element) => {
+                        element.classList.remove('paused');
+                    });
+                });
+            }
         }
 
         function UpdateChartTitles(filterParameters) {

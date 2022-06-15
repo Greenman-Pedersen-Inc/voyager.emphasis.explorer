@@ -45,7 +45,7 @@ define(function () {
                     }
                 },
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

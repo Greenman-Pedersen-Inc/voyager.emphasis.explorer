@@ -35,7 +35,7 @@ define(function () {
                 },
                 dataLabels: data['dataLabels'],
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

@@ -30,7 +30,7 @@ define(function () {
                 legend: data["legend"],
                 dataLabels: data["dataLabels"],
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

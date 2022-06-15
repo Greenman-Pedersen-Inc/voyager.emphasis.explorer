@@ -1,9 +1,9 @@
 define([
     './app/Utilities.js',
-    './app/staticData/urls.js',
     './app/components/statistics/MixedBarLineChart.js',
-    'esri/request',
-], function (Utilities, urls, MixedBarLineChart, esriRequest) {
+], function (Utilities,
+    MixedBarLineChart
+) {
     return function DriverBehaviorRollingAverageChart() {
         const self = this;
         const dataAttribute = 'annual_bodies_rolling_average';
@@ -16,51 +16,41 @@ define([
             chartTitle.innerHTML = '5 Year Rolling Average - ' + filterParameters.subCategory.label;
         };
 
-        this.update = function (statisticsData, filterParameters) {
+        this.clearChart = function() {
+            var series = [];
+            if (self.chart) {
+                self.chart.chart.updateSeries(series);
+            }
+        }
+
+        this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
             chartLoading.classList.remove('hidden');
             chartContainer.classList.remove('hidden');
+            self.clearChart();
+            requestParams["chartType"] = dataAttribute;
+            let searchParams = new URLSearchParams(requestParams);
 
-            const chartData = statisticsData[dataAttribute];
+            fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                if (response.status === 200) {
+                    response.json().then((data) => {
+                        let chartData = [];
+                        if (data !== undefined) chartData = data[requestParams.category][requestParams.subCategory];
 
-            chartContainer.classList.remove('hidden');
-            chartLoading.classList.add('hidden');
+                        chartContainer.classList.remove('hidden');
+                        chartLoading.classList.add('hidden');
 
-            var formattedData = formatData(chartData, filterParameters.subCategory.value);
-
-            if (self.chart) {
-                self.chart.update(formattedData);
-            } else {
-                self.chart = new MixedBarLineChart(formattedData, chart);
-            }
+                        let formattedData = formatData(chartData, filterParameters.subCategory.value);
+                        if (self.chart) {
+                            self.chart.update(formattedData);
+                        } else {
+                            self.chart = new MixedBarLineChart(formattedData, chart);
+                        }
+                    });
+                } else {
+                    Utilities.errorHandler(response.error, response.message);
+                }
+            });
         };
-
-        // const self = this;
-        // this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
-        // this.updateChartTitle = function(filterParameters) {
-        //     chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.subCategory.label;
-        // }
-        // this.update = function(filterParameters) {
-        //     var dataAttribute = filterParameters.subCategory.value + "AverageData";
-        //     chartLoading.classList.remove('hidden');
-        //     chartContainer.classList.remove('hidden');
-
-        //     var requestParams = filterParameters.createPayloadRequest();
-
-        //     return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-        //         var chartData = response.data.EmphasisAreaData['DriverBehaviorAverageData'][dataAttribute];
-
-        //         chartContainer.classList.remove('hidden');
-        //         chartLoading.classList.add('hidden');
-
-        //         var formattedData = formatData(chartData, filterParameters.subCategory.value);
-
-        //         if (self.chart) {
-        //             self.chart.update(formattedData);
-        //         } else {
-        //             self.chart = new MixedBarLineChart(formattedData, chart);
-        //         }
-        //     }, Utilities.errorHandler);
-        // }
     };
 
     function formatData(data, categoryLabel) {
@@ -144,7 +134,7 @@ define([
                 },
             },
             noData: {
-                text: 'No data to display',
+                text: 'Loading data...',
                 align: 'center',
                 verticalAlign: 'middle',
             },

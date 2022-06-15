@@ -33,7 +33,7 @@ define(function () {
                 },
                 colors: ['#f45d4c'],
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }

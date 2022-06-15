@@ -1,7 +1,9 @@
 define(function () {
-    // const baseURL = "http://127.0.0.1:50000/v1/";
-    const baseURL = 'https://gpi.services/test-api';
-    const apiURL = 'https://gpi.services/test-api/v1';
+    const baseURL = "http://127.0.0.1:50000";
+    const apiURL = baseURL + '/v1';
+
+    // const baseURL = 'https://gpi.services/test-api';
+    // const apiURL = 'https://gpi.services/test-api/v1';
     const eaURL = apiURL + '/emphasis-explorer';
     const generalURL = apiURL + '/general';
 

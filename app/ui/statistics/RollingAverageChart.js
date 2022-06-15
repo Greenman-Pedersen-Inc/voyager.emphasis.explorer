@@ -1,15 +1,11 @@
 define(
     [
         './app/Utilities.js',
-        "./app/staticData/urls.js",
         "./app/components/statistics/MixedBarLineChart.js",
-        "esri/request",
     ],
     function(
         Utilities,
-        urls,
         MixedBarLineChart,
-        esriRequest
     ) {
         return function RollingAverageChart() {
             const self = this;
@@ -23,50 +19,48 @@ define(
                 chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.category.label;
             }
         
-            this.update = function (statisticsData, filterParameters) {
-                chartLoading.classList.remove('hidden');
-                chartContainer.classList.remove('hidden');
-        
-                var chartData = statisticsData[dataAttribute];
-        
-                chartContainer.classList.remove('hidden');
-                chartLoading.classList.add('hidden');
-        
-                var formattedData = formatData(chartData, filterParameters.subCategory.value);
-        
+            this.clearChart = function() {
+                var series = [
+                    { name: 'Total Injuries', type: 'column', data: [] },
+                    { name: 'Serious Injury', type: 'line', data: [] },
+                    { name: 'Fatality', type: 'line', data: [] }
+                ];
                 if (self.chart) {
-                    self.chart.update(formattedData);
-                } else {
-                    self.chart = new MixedBarLineChart(formattedData, chart);
+                    self.chart.chart.updateSeries(series);
                 }
             }
+            
+            this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
+                chartLoading.classList.remove('hidden');
+                chartContainer.classList.remove('hidden');
+                self.clearChart();
+        
+                requestParams["chartType"] = dataAttribute;
+                let searchParams = new URLSearchParams(requestParams);
+                
+                fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                    if (response.status === 200) {
+                        response.json().then((data) => {
+                            let chartData = [];
+                            if (data !== undefined) chartData = data[requestParams.category][dataAttribute];
 
-            // this.requestUrl = urls.emphasisArea_RollingAverageStatistics;
-
-            // this.updateChartTitle = function(filterParameters) {
-            //     chartTitle.innerHTML = "5 Year Rolling Average - " + filterParameters.category.label;
-            // }
-
-            // this.update = function(filterParameters) {
-            //     chartLoading.classList.remove('hidden');
-            //     chartContainer.classList.remove('hidden');
-
-            //     var requestParams = filterParameters.createPayloadRequest();
-
-            //     return esriRequest(self.requestUrl, { query: requestParams }).then(function(response) {
-            //         var chartData = response.data.EmphasisAreaData[dataAttribute];
-
-            //         chartContainer.classList.remove('hidden');
-            //         chartLoading.classList.add('hidden');
-
-            //         var formattedData = formatData(chartData, filterParameters.category.value);
-            //         if (self.chart) {
-            //             self.chart.update(formattedData);
-            //         } else {
-            //             self.chart = new MixedBarLineChart(formattedData, chart);
-            //         }
-            //     }, Utilities.errorHandler);
-            // }
+                            chartContainer.classList.remove('hidden');
+                            chartLoading.classList.add('hidden');
+                    
+                            let formattedData = formatData(chartData, filterParameters.category.value);
+                            if (self.chart) {
+                                self.chart.update(formattedData);
+                            } else {
+                                self.chart = new MixedBarLineChart(formattedData, chart);
+                            }
+                        });
+                    } else {
+                        Utilities.errorHandler(response.error, response.message);
+                        chartContainer.classList.remove('hidden');
+                        chartLoading.classList.add('hidden');
+                    }
+                });
+            }
         }
 
         function formatData(data, categoryLabel) {
@@ -148,37 +142,10 @@ define(
                     }
                 },
                 noData: {
-                    text: "No data to display",
+                    text: "Loading data...",
                     align: 'center',
                     verticalAlign: 'middle',
                 }
             }
         }
-
-        // return function RollingAverageChart() {
-        //     const self = this;
-        //     this.requestUrl = urls.emphasisAreaDataURL;
-        //     this.update = function (filterParameters) {
-        //         RollingAverageChartLoading.classList.remove('hidden');
-
-        //         var requestParams = filterParameters.createPayloadRequest();
-
-        //         return esriRequest(self.requestUrl, { query: requestParams }).then(function (response) {
-        //             var chartData = formatTimeData(response.data.TimeData);
-
-        //             RollingAverageChartContainer.classList.remove('hidden');
-        //             RollingAverageChartLoading.classList.add('hidden');
-
-        //             if (self.chart) {
-        //                 self.chart.update(chartData[0], chartData[1], timeSummaryChart);
-        //             } else {
-        //                 self.chart = new MixedBarLineChart(chartData[0], chartData[1], timeSummaryChart);
-        //             }
-
-        //             RollingAverageChartTitle.innerHTML = "Annual Fatalities and Serious Injuries - " + filterParameters.summary.label;
-        //         }, Utilities.errorHandler);
-        //     }
-        // }
-
-
     });

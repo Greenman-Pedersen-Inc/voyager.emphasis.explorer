@@ -1,9 +1,11 @@
 define(
     [
         "./app/components/statistics/StackedColumnChart.js",
+        './app/Utilities.js'
     ],
     function(
         StackedColumnChart,
+        Utilities
     ) {
         return function CountyBodiesChart() {
             const self = this;
@@ -16,22 +18,41 @@ define(
             this.updateChartTitle = function(filterParameters) {
                 chartTitle.innerHTML = "Fatalities & Serious Injuries by County - " + filterParameters.category.label;
             }
-            this.update = function (statisticsData, filterParameters) {
+
+            this.clearChart = function() {
+                var series = [];
+                if (self.chart) {
+                    self.chart.chart.updateSeries(series);
+                }
+            }
+
+            this.update = function (requestParams, filterParameters, fetchUrl, fetchHeader) {
                 chartLoading.classList.remove('hidden');
                 chartContainer.classList.remove('hidden');
+                self.clearChart();
+                requestParams["chartType"] = dataAttribute;
+                let searchParams = new URLSearchParams(requestParams);
 
-                var chartData = statisticsData[dataAttribute];
+                fetch(fetchUrl + searchParams.toString(), fetchHeader).then((response) => {
+                    if (response.status === 200) {
+                        response.json().then((data) => {
+                            let chartData = [];
+                            if (data !== undefined) chartData = data[requestParams.category][dataAttribute];
 
-                chartContainer.classList.remove('hidden');
-                chartLoading.classList.add('hidden');
-
-                var formattedData = formatData(chartData, filterParameters.category.value);
-
-                if (self.chart) {
-                    self.chart.update(formattedData);
-                } else {
-                    self.chart = new StackedColumnChart(formattedData, chart);
-                }
+                            chartContainer.classList.remove('hidden');
+                            chartLoading.classList.add('hidden');
+                    
+                            let formattedData = formatData(chartData, filterParameters.category.value);
+                            if (self.chart) {
+                                self.chart.update(formattedData);
+                            } else {
+                                self.chart = new StackedColumnChart(formattedData, chart);
+                            }
+                        });
+                    } else {
+                        Utilities.errorHandler(response.error, response.message);
+                    }
+                });
             }
         }
 
@@ -77,7 +98,7 @@ define(
                         filename: fileName,
                     },
                     noData: {
-                        text: "No data to display",
+                        text: "Loading data...",
                         align: 'center',
                         verticalAlign: 'middle',
                     }
